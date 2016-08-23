@@ -1,0 +1,7 @@
+Token Binding Utilities
+Copyright 2016 Brian Campbell
+
+code for converting the concatenated R & S values of the signature to and
+from DER was taken from jose4j https://bitbucket.org/b_c/jose4j and was
+originally derived from the Apache Santuario XML Security library's
+SignatureECDSA implementation. http://santuario.apache.org/
