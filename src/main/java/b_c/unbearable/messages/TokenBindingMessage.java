@@ -1,5 +1,8 @@
 package b_c.unbearable.messages;
 
+import b_c.unbearable.messages.utils.In;
+import b_c.unbearable.messages.utils.Util;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;

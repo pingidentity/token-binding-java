@@ -17,10 +17,6 @@ public class SignatureResult
 
     private List<String> commentary = new LinkedList<String>();
 
-    SignatureResult()
-    {
-    }
-
     SignatureResult(Status status)
     {
         this.status = status;

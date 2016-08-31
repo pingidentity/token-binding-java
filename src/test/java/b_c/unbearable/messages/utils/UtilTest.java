@@ -1,5 +1,6 @@
-package b_c.unbearable.messages;
+package b_c.unbearable.messages.utils;
 
+import b_c.unbearable.messages.utils.Util;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;

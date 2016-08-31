@@ -1,4 +1,4 @@
-package b_c.unbearable.messages;
+package b_c.unbearable.messages.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

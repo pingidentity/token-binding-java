@@ -1,4 +1,4 @@
-package b_c.unbearable.messages;
+package b_c.unbearable.messages.utils;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;

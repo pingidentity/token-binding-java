@@ -1,5 +1,9 @@
 package b_c.unbearable.messages;
 
+import b_c.unbearable.messages.utils.In;
+import b_c.unbearable.messages.utils.KeyUtil;
+import b_c.unbearable.messages.utils.Util;
+
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;

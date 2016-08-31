@@ -1,4 +1,4 @@
-package b_c.unbearable.messages;
+package b_c.unbearable.messages.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class In extends ByteArrayInputStream
 {
     private static final byte[] EMPTY = new byte[0];
 
-    In(byte[] buf)
+    public In(byte[] buf)
     {
         super(buf);
     }
@@ -25,7 +25,7 @@ public class In extends ByteArrayInputStream
         return (readOneByteInt() << 8) | readOneByteInt();
     }
 
-    byte[] readOneByteOfBytes() throws IOException
+    public byte[] readOneByteOfBytes() throws IOException
     {
         int len = readOneByteInt();
         return readBytes(len);
