@@ -37,8 +37,9 @@ public class TokenBindingMessage
         {
             TokenBinding tb = new TokenBinding();
 
-            final int type = in.readOneByteInt();
-            tb.tokenBindingType = new TokenBindingType(type);
+            final int tbTypeAsInt = in.readOneByteInt();
+            final byte tbType = Util.byteFromInt(tbTypeAsInt);
+            tb.tokenBindingType = new TokenBindingType(tbType);
 
             in.mark();
             int keyParametersIdentifier = in.readOneByteInt();
@@ -53,7 +54,7 @@ public class TokenBindingMessage
             tb.extensions = in.readTwoBytesOfBytes();
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(tb.tokenBindingType.getType());   // TODO
+            baos.write(tb.tokenBindingType.getType());
             baos.write(tb.tokenBindingID.tokenBindingKeyParameters.getIdentifier());
             baos.write(ekm);
             byte[] signatureInput = baos.toByteArray();

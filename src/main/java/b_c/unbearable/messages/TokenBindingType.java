@@ -5,17 +5,17 @@ package b_c.unbearable.messages;
  */
 public class TokenBindingType
 {
-    public static final int PROVIDED = 0;
-    public static final int REFERRED = 1;
+    public static final byte PROVIDED = 0;
+    public static final byte REFERRED = 1;
 
-    private int type;
+    private byte type;
 
-    public TokenBindingType(int type)
+    public TokenBindingType(byte type)
     {
         this.type = type;
     }
 
-    public int getType()
+    public byte getType()
     {
         return type;
     }
