@@ -42,8 +42,9 @@ public class TokenBindingMessage
             tb.tokenBindingType = new TokenBindingType(tbType);
 
             in.mark();
-            int keyParametersIdentifier = in.readOneByteInt();
-            TokenBindingKeyParameters keyParams = TokenBindingKeyParameters.fromIdentifier(Util.byteFromInt(keyParametersIdentifier));
+            int keyParametersIdentifierAsInt = in.readOneByteInt();
+            byte keyParamsIdentifier = Util.byteFromInt(keyParametersIdentifierAsInt);
+            TokenBindingKeyParameters keyParams = TokenBindingKeyParameters.fromIdentifier(keyParamsIdentifier);
             tb.tokenBindingID = new TokenBindingID();
             tb.tokenBindingID.tokenBindingKeyParameters = keyParams;
             int keyLength = in.readTwoByteInt();
@@ -58,7 +59,7 @@ public class TokenBindingMessage
             baos.write(tb.tokenBindingID.tokenBindingKeyParameters.getIdentifier());
             baos.write(ekm);
             byte[] signatureInput = baos.toByteArray();
-            tb.signatureResult = tb.tokenBindingID.tokenBindingKeyParameters.evaluateSignature(signatureInput, tb.signature, tb.tokenBindingID.publicKey);
+            tb.signatureResult = keyParams.evaluateSignature(signatureInput, tb.signature, tb.tokenBindingID.publicKey);
 
             tokenBindingMessage.tokenBindings.add(tb);
         }
