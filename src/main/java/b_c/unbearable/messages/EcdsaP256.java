@@ -15,7 +15,7 @@ import java.security.interfaces.ECPublicKey;
 public class EcdsaP256 extends TokenBindingKeyParameters
 {
     @Override
-    PublicKey readPublicKey(In in) throws IOException
+    PublicKey readPublicKey(In in, int length) throws IOException
     {
         byte[] point = in.readOneByteOfBytes();
         byte[] x = Util.leftHalf(point);
@@ -24,9 +24,9 @@ public class EcdsaP256 extends TokenBindingKeyParameters
     }
 
     @Override
-    String javaAlgorithm()
+    String getJavaAlgorithm()
     {
-        return "NONEwithECDSA";
+        return "SHA256withECDSA";
     }
 
     @Override

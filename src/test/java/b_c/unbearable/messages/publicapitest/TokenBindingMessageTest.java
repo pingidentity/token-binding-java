@@ -16,24 +16,26 @@ import static org.junit.Assert.*;
  */
 public class TokenBindingMessageTest
 {
+
     @Test
-    public void v0_8_singleProvidedECDSAP256() throws IOException
+    public void v0_10_singleProvidedECDSAP256() throws IOException
     {
-        String encoded = "AIcAAkAgSeZjyyTPGGdPnwDuhIevp1elD4KpiDkE0khlHOahu0n0AmOj-GQ8P9xi4zno7ocIxQcN-GcukkI42J6CVTRx" +
-                "AECNjCiTbxChz4TfWWG9s_PPeKevSACmwc_wGClVAlAJB_6Fb0QekjVFxgOqK6hbQcVP188BTYhyKdR9GPmuEli-AAA";
+        String encoded = "AIkAAgBBQLlO7EVk3V2g3-zmgRpq2qKfbw6F1rZ97Y15siYmjuy3U5CKNcwXnrHYqM87PcilegJ7Ooxd7KpiRGRIp" +
+                "5jCAXoAQCLhZIeSUTWv3ETKb9qPDyWzxmQlwFDFkmeGSophCtEEdfOnsKotZNOgQ3Fz3DIwHZb-GqdkjoHiVN_hAE5dG-gAAA";
 
-        byte[] ekm = new byte[] {-5, 106, 16, 126, 68, -123, 18, -12, -30, 13, 10, -47, 1, 7, -68, 125, 102, -116, -29,
-                -48, -87, -61, -104, 18, -96, -91, 86, 101, 35, -122, -32, -90};
-
+        byte[] ekm = new byte[] {-25, 60, -5, -91, -81, 127, -84, -127, -124, -17, -42, 106, -11, -15, 20, -98, 95,
+                -110, 108, -80, -91, -86, 77, 74, -11, -74, -84, -10, 21, -103, -5, -4};
 
         TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+
         assertNull(tokenBindingMessage.getReferredTokenBinding());
 
         // now change the ekm and make sure it parses but has an invalid signature
-        ekm[0] = 0;
+        ekm[0] = 77;
         tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         provided = tokenBindingMessage.getProvidedTokenBinding();
@@ -44,26 +46,27 @@ public class TokenBindingMessageTest
     }
 
     @Test
-    public void v0_8_providedAndReferredECDSAP256() throws IOException
+    public void v0_10_simpleUnknownKeyParamType() throws IOException
     {
-        String encoded = "AQ4AAkC5TuxFZN1doN_s5oEaatqin28Ohda2fe2NebImJo7st1OQijXMF56x2KjPOz3IpXoCezqMXeyqYkRkSKeYwgF6AE" +
-                "BuoYkI_uRespqYLLpSKX3nvk7giO5HUO9OsHMWQdhb-Xg1V1lL3_alG7YAfK7wAnKLp2-AYvD0c60l-el4TGoGAAABAkBS4SbAwuB9" +
-                "rcGy1XcgsH5wxNRV72x1H2rjtH6iMxWA1IiEgQKbWY_06TQgpqF5Z7bUvb_rREfHfLfo3wBF2tCzAECG9LMnvjqjN_VfZNl6qoITSK" +
-                "jFe8d2DYJn4xbmsRBXTksnWBy54j8ovGkWdJeInCEQYdaaT9aUvtTyKpJj1IJXAAA=";
+        byte unknownType = 88;
+        byte[] tbmsg =
+                {0, -119, 0, unknownType, 0, 65, 64, -71, 78, -20, 69, 100, -35, 93, -96, -33, -20, -26, -127, 26, 106, -38, -94, -97, 111,
+                14, -123, -42, -74, 125, -19, -115, 121, -78, 38, 38, -114, -20, -73, 83, -112, -118, 53, -52, 23, -98, -79, -40, -88,
+                -49, 59, 61, -56, -91, 122, 2, 123, 58, -116, 93, -20, -86, 98, 68, 100, 72, -89, -104, -62, 1, 122, 0, 64, 34, -31, 100,
+                -121, -110, 81, 53, -81, -36, 68, -54, 111, -38, -113, 15, 37, -77, -58, 100, 37, -64, 80, -59, -110, 103, -122, 74, -118,
+                97, 10, -47, 4, 117, -13, -89, -80, -86, 45, 100, -45, -96, 67, 113, 115, -36, 50, 48, 29, -106, -2, 26, -89, 100, -114,
+                -127, -30, 84, -33, -31, 0, 78, 93, 27, -24, 0, 0};
 
-        byte[] ekm = new byte[] {-22, 61, 72, -105, 56, 73, -100, 5, -96, -83, -16, 104, -39, -19, -72, -39, 86, 77, -73,
-                -85, -62, 35, 55, 74, -15, -97, -4, -43, -82, -33, 92, -72};
+        byte[] ekm = new byte[] {-25, 60, -5, -91, -81, 127, -84, -127, -124, -17, -42, 106, -11, -15, 20, -98, 95,
+                -110, 108, -80, -91, -86, 77, 74, -11, -74, -84, -10, 21, -103, -5, -4};
 
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
-        assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
-        TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
-        assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
-        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
-        assertNotNull(providedTokenBinding.getOpaqueTokenBindingID());
-        TokenBinding referred = tbMessage.getReferredTokenBinding();
-        assertThat(SignatureResult.Status.VALID, equalTo(referred.getSignatureResult().getStatus()));
-        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(referred.getKeyParamsIdentifier()));
-        assertNotNull(referred.getOpaqueTokenBindingID());
-
+        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBytes(tbmsg, ekm);
+        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.UNEVALUATED, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(unknownType, equalTo(provided.getKeyParamsIdentifier()));
+        String msg = provided.getSignatureResult().getCommentary().iterator().next();
+        assertThat(msg, containsString(String.valueOf(unknownType)));
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
     }
 }

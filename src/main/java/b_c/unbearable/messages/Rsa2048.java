@@ -6,6 +6,9 @@ import b_c.unbearable.messages.utils.KeyUtil;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
 
 /**
  *
@@ -13,7 +16,7 @@ import java.security.interfaces.RSAPublicKey;
 public abstract class Rsa2048 extends TokenBindingKeyParameters
 {
     @Override
-    PublicKey readPublicKey(In in) throws IOException
+    PublicKey readPublicKey(In in, int length) throws IOException
     {
         byte[] modulus = in.readTwoBytesOfBytes();
         byte[] publicExponent = in.readOneByteOfBytes();
@@ -49,14 +52,16 @@ public abstract class Rsa2048 extends TokenBindingKeyParameters
         }
 
         @Override
-        String javaAlgorithm()
+        String getJavaAlgorithm()
         {
-            return "NONEwithRSA";
+            return "SHA256withRSA";
         }
     }
 
     static class Pss extends Rsa2048
     {
+        AlgorithmParameterSpec PSS_SPEC = new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32, 1);
+
         @Override
         byte getIdentifier()
         {
@@ -64,10 +69,15 @@ public abstract class Rsa2048 extends TokenBindingKeyParameters
         }
 
         @Override
-        String javaAlgorithm()
+        String getJavaAlgorithm()
         {
-            return "NONEwithRSAandMGF1";
+            return "SHA256withRSAandMGF1";
         }
 
+        @Override
+        AlgorithmParameterSpec getJavaAlgorithmParameterSpec()
+        {
+            return PSS_SPEC;
+        }
     }
 }

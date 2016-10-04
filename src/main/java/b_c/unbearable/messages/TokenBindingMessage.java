@@ -3,6 +3,7 @@ package b_c.unbearable.messages;
 import b_c.unbearable.messages.utils.In;
 import b_c.unbearable.messages.utils.Util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -44,13 +45,19 @@ public class TokenBindingMessage
             TokenBindingKeyParameters keyParams = TokenBindingKeyParameters.fromIdentifier(Util.byteFromInt(keyParametersIdentifier));
             tb.tokenBindingID = new TokenBindingID();
             tb.tokenBindingID.tokenBindingKeyParameters = keyParams;
-            tb.tokenBindingID.publicKey = keyParams.readPublicKey(in);
+            int keyLength = in.readTwoByteInt();
+            tb.tokenBindingID.publicKey = keyParams.readPublicKey(in, keyLength);
             tb.tokenBindingID.rawTokenBindingID = in.readBytesFromMark();
 
             tb.signature = in.readTwoBytesOfBytes();
             tb.extensions = in.readTwoBytesOfBytes();
 
-            tb.signatureResult = tb.tokenBindingID.tokenBindingKeyParameters.evaluateSignature(ekm, tb.signature, tb.tokenBindingID.publicKey);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            baos.write(tb.tokenBindingType.getType());   // TODO
+            baos.write(tb.tokenBindingID.tokenBindingKeyParameters.getIdentifier());
+            baos.write(ekm);
+            byte[] signatureInput = baos.toByteArray();
+            tb.signatureResult = tb.tokenBindingID.tokenBindingKeyParameters.evaluateSignature(signatureInput, tb.signature, tb.tokenBindingID.publicKey);
 
             tokenBindingMessage.tokenBindings.add(tb);
         }

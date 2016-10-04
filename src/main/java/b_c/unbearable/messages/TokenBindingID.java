@@ -18,6 +18,4 @@ public class TokenBindingID
     TokenBindingKeyParameters tokenBindingKeyParameters;
 
     PublicKey publicKey;
-
-
 }

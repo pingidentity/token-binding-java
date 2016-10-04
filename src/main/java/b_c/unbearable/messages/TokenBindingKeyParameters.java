@@ -2,14 +2,15 @@ package b_c.unbearable.messages;
 
 import b_c.unbearable.messages.utils.ExceptionUtil;
 import b_c.unbearable.messages.utils.In;
-import b_c.unbearable.messages.utils.Util;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.AlgorithmParameterSpec;
 
 /**
  *
@@ -31,20 +32,24 @@ public abstract class TokenBindingKeyParameters
             case RSA2048_PSS:
                 return new Rsa2048.Pss();
             default:
-                throw new IOException("Unknown TokenBindingKeyParameters value: " + Util.intFromByte(identifier));
-
+                return new UnknownKeyParameters(identifier);
         }
     }
 
     abstract byte getIdentifier();
 
-    abstract PublicKey readPublicKey(In in) throws IOException;
+    abstract PublicKey readPublicKey(In in, int length) throws IOException;
 
-    abstract String javaAlgorithm();
+    abstract String getJavaAlgorithm();
 
     abstract String checkPublicKey(PublicKey publicKey);
 
-    SignatureResult evaluateSignature(byte[] ekm, byte[] signature, PublicKey publicKey) throws IOException
+    AlgorithmParameterSpec getJavaAlgorithmParameterSpec()
+    {
+        return null;
+    }
+
+    SignatureResult evaluateSignature(byte[] signatureInput, byte[] signature, PublicKey publicKey) throws IOException
     {
         String keyProblem = checkPublicKey(publicKey);
         if (keyProblem != null)
@@ -57,19 +62,24 @@ public abstract class TokenBindingKeyParameters
         Signature verifier;
         try
         {
-            verifier = Signature.getInstance(javaAlgorithm());
+            verifier = Signature.getInstance(getJavaAlgorithm());
+            AlgorithmParameterSpec algorithmParameterSpec = getJavaAlgorithmParameterSpec();
+            if (algorithmParameterSpec != null)
+            {
+                verifier.setParameter(algorithmParameterSpec);
+            }
         }
-        catch (NoSuchAlgorithmException e)
+        catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e)
         {
             SignatureResult signatureResult = new SignatureResult(SignatureResult.Status.UNEVALUATED);
-            signatureResult.addComment("Unsupported TokenBindingKeyParameters type: " + ExceptionUtil.toStringWithCauses(e));
+            signatureResult.addComment("Unsupported TokenBindingKeyParameters type ( " + getIdentifier() + "):" + ExceptionUtil.toStringWithCauses(e));
             return signatureResult;
         }
 
         try
         {
             verifier.initVerify(publicKey);
-            verifier.update(ekm);
+            verifier.update(signatureInput);
             boolean legit = verifier.verify(signature);
             return legit ? SignatureResult.VALID : SignatureResult.INVALID;
         }
@@ -83,5 +93,49 @@ public abstract class TokenBindingKeyParameters
     }
 
 
+    static class UnknownKeyParameters extends TokenBindingKeyParameters
+    {
+        UnknownKeyParameters(byte identifier)
+        {
+            this.identifier = identifier;
+        }
 
+        byte identifier;
+
+        @Override
+        byte getIdentifier()
+        {
+            return identifier;
+        }
+
+        @Override
+        PublicKey readPublicKey(In in, int length) throws IOException
+        {
+            for (int i = 0; i < length; i++)
+            {
+                in.read();
+            }
+            return null;
+        }
+
+        @Override
+        String getJavaAlgorithm()
+        {
+            return "UNKNOWN";
+        }
+
+        @Override
+        String checkPublicKey(PublicKey publicKey)
+        {
+            return null;
+        }
+
+        @Override
+        SignatureResult evaluateSignature(byte[] signatureInput, byte[] signature, PublicKey publicKey) throws IOException
+        {
+            SignatureResult signatureResult = new SignatureResult(SignatureResult.Status.UNEVALUATED);
+            signatureResult.addComment("Unknown Token Binding Key Parameters type: " + getIdentifier());
+            return signatureResult;
+        }
+    }
 }
