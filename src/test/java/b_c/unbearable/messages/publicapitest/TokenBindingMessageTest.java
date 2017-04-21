@@ -19,6 +19,66 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class TokenBindingMessageTest
 {
+
+    @Test
+    public void v0_10_notsure_from_edge() throws IOException
+    {
+        // from Andrei's private reply to https://www.ietf.org/mail-archive/web/unbearable/current/msg01332.html
+        // and log files
+
+        String encoded = "AIkAAgBBQJ5dTpA66QvSRCFhAf-5G4Xg_UbXiMZyBNvxNz3KgEfPcyhFTUMxa0vT4yc-oZKocTnWWkMd9voV7ADQdaMI5zkAQASTZuLhUlwSYwjyYHx0rLrAYfXuxzep3wdecyRyvD1Y1wiV3OzurR2Ad6WW3M-FWxB5dON0c7UIiAV4c06C7KUAAA";
+
+        byte[] ekm = new byte[] {-4, -53, -33, 70, 27, -117, 62, -44, 51, 28, 49, -38, 84, 0, -22, 55, 22, -105, -8, 70, -120, -21, -76, 118, 112, -26, 77, 44, -106, 34, -98, -122};
+
+        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+
+        // now change the ekm and make sure it parses but has an invalid signature
+        ekm[0] = 77;
+        tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.INVALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+        assertNotNull(provided.getOpaqueTokenBindingID());
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+    }
+
+
+    @Test
+    public void v0_10_singleProvidedECDSAP256_from_edge() throws IOException
+    {
+        // from Andrei's private reply to https://www.ietf.org/mail-archive/web/unbearable/current/msg01332.html
+        // and log files
+
+        String encoded = "AIkAAgBBQJ5dTpA66QvSRCFhAf-5G4Xg_UbXiMZyBNvxNz3KgEfPcyhFTUMxa0vT4yc-oZKocTnWWkMd9voV7ADQdaMI5zkAQNs832pQnY1h6fy8HOLdthSQYnh8Bq_h4NqiOjLN7zj2ORUaR40MF1fcQxKz17ia0XCTlvB8HttjkWl3nksSok8AAA";
+
+        byte[] ekm = new byte[] {27, -39, -91, -27, 0, -5, -23, 82, 104, 99, 120, -118, 39, -39, 65, -126, -55, 105, -4, -108, -60, 12, 118, -40, -103, -94, -56, -50, 121, -11, 72, 58};
+
+        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+
+        // now change the ekm and make sure it parses but has an invalid signature
+        ekm[0] = 77;
+        tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.INVALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+        assertNotNull(provided.getOpaqueTokenBindingID());
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+    }
+
     @Test
     public void v0_10_singleProvidedECDSAP256() throws IOException
     {
@@ -367,4 +427,68 @@ public class TokenBindingMessageTest
         tbid = tbid.replaceAll("=", "");
 //        System.out.println("tbid: " + tbid);
     }
+
+
+
+
+    @Test
+    public void v0_10_providedAndReferredECDSAP256_2() throws Exception
+    {
+        // used in examples of form post id token for -01 (maybe) http://openid.net/specs/openid-connect-token-bound-authentication-1_0.html
+
+
+        // provided and referred to the IPD
+        String encoded = "ARIAAgBBQCfsI1D1sTq5mvT_2H_dihNIvuHJCHGjHPJchPavNbGrOo26-2JgT_IsbvZd4daDFbirYBIwJ-TK1rh8FzrC-psAQO4Au9xPupLSkhwT9Yn9aSvHXFsMLh4d4cEBKGP1clJtsfUFGDw-8HQSKwgKFN3WfZGq27y8NB3NAM1oNzvqVOIAAAECAEFArPIiuZxj9gK0dWhIcG63r2-sZ8V3LX9gpNl8Um_oGOtmwoP1v0VHNIHEOzW3BOqcBLvUzVEG6a6KGEj3GrFcqQBA9YxqHPBIuDui_aQ1SoRGKyBEhaG2i-Wke3erRb1YwC7nTgrpqqJG3z1P8bt7cjZN6TpOyktdSSK7OJgiApwG7AAA";
+
+        byte[] ekm = new byte[] {-81, -127, 77, 68, -61, -108, 27, -3, 32, 65, 2, -78, 12, 108, 4, -120, 33, 58, -65, -55, 102, -90, -59, 125, -12, 102, 93, 118, -41, -123, 33, -124};
+        String encodedEkm = Base64.getUrlEncoder().encodeToString(ekm);
+        encodedEkm = encodedEkm.replaceAll("=", "");
+        System.out.println("EKM with IDP: " + encodedEkm);
+        ekm = Base64.getUrlDecoder().decode(encodedEkm);
+        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
+        TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
+        assertNotNull(providedTokenBinding.getOpaqueTokenBindingID());
+        TokenBinding referred = tbMessage.getReferredTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(referred.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(referred.getKeyParamsIdentifier()));
+        assertNotNull(referred.getOpaqueTokenBindingID());
+        byte[] opaqueReferredTokenBindingID = referred.getOpaqueTokenBindingID();
+
+//        System.out.println();
+
+
+        // just provided to the RP
+        encoded = "AIkAAgBBQKzyIrmcY_YCtHVoSHBut69vrGfFdy1_YKTZfFJv6BjrZsKD9b9FRzSBxDs1twTqnAS71M1RBumuihhI9xqxXKkAQIMi9gthwFtmF1lpXioRsIlQA8vZOKQ0hrJE1_610h0h-IX-O_WllivUBoyLV7ypArE15whKaDrfwsolflmWfPsAAA";
+
+        ekm = new byte[] {-42, 99, -94, 44, 45, 8, 20, 14, 82, 48, 20, 16, 86, -9, 120, -15, 84, -118, 54, -31, 124, -11, 68, -122, -61, 111, -44, 5, -75, -94, -109, 126};
+        encodedEkm = Base64.getUrlEncoder().encodeToString(ekm);
+        encodedEkm = encodedEkm.replaceAll("=", "");
+//        System.out.println("EKM with RP: " + encodedEkm);
+        ekm = Base64.getUrlDecoder().decode(encodedEkm);
+
+        tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        assertThat(1, equalTo(tbMessage.getTokenBindings().size()));
+        providedTokenBinding = tbMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
+
+        assertArrayEquals(opaqueReferredTokenBindingID, tbMessage.getProvidedTokenBinding().getOpaqueTokenBindingID());
+
+        String tbid = Base64.getUrlEncoder().encodeToString(opaqueReferredTokenBindingID);
+        tbid = tbid.replaceAll("=", "");
+//        System.out.println("tbid: " + tbid);
+
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] tbhBytes = digest.digest(providedTokenBinding.getOpaqueTokenBindingID());
+        String tbh = Base64.getUrlEncoder().encodeToString(tbhBytes);
+        tbh = tbh.replaceAll("=", "");
+//        System.out.println("tbh: " + tbh);
+
+    }
+
+
 }
