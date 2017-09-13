@@ -6,6 +6,7 @@ import b_c.unbearable.messages.utils.Util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class TokenBindingMessage
         int len = in.readTwoByteInt();
         if (len != in.available())
         {
-            throw new IOException("TokenBindingMessage length of " + len + " indicated but only " + in.available() + " bytes are available.");
+            throw new IOException("TokenBindingMessage length of " + len + " indicated but " + in.available() + " bytes are available " + Arrays.toString(tokenBindingMessageBytes) );
         }
 
         TokenBindingMessage tokenBindingMessage = new TokenBindingMessage();
@@ -62,6 +63,11 @@ public class TokenBindingMessage
             tb.signatureResult = keyParams.evaluateSignature(signatureInput, tb.signature, tb.tokenBindingID.publicKey);
 
             tokenBindingMessage.tokenBindings.add(tb);
+        }
+
+        if (tokenBindingMessage.getTokenBindings().isEmpty())
+        {
+            throw new IOException("There must be at least one TokenBinding structure in the Token Binding message " + Arrays.toString(tokenBindingMessageBytes));
         }
 
         return tokenBindingMessage;

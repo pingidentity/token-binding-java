@@ -51,7 +51,7 @@ public class HttpsTokenBindingServerProcessing
         }
         catch (IOException e)
         {
-            String msg = "Unexpected problem processing the Token Binding message.";
+            String msg = "Unexpected problem processing the Token Binding message: " + e.getMessage();
             throw new TBException(msg, e);
         }
 

@@ -4,10 +4,15 @@ import b_c.unbearable.messages.SignatureResult;
 import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingKeyParameters;
 import b_c.unbearable.messages.TokenBindingMessage;
+import b_c.unbearable.messages.https.HttpsTokenBindingServerProcessing;
+import b_c.unbearable.messages.https.TBException;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Base64;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -19,6 +24,28 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class TokenBindingMessageTest
 {
+    private static final Logger log = LoggerFactory.getLogger(TokenBindingMessageTest.class);
+
+    @Test
+    public void empty_tb_msg() throws Exception
+    {
+        // Saw some errors at
+        // https://www.ietf.org/mail-archive/web/unbearable/current/msg01332.html
+        // that were the result of AAA being sent as the Sec-Token-Binding header
+        String encoded = "AAA";
+        byte[] ekm = new byte[] {-116, 19, 118, -122, 78, 115, 98, 116, -124, -110, -62, -108, -59, 63, -39, -119, -123, 124, -39, -3, -7, 94, 18, 10, 67, -79, -94, 67, -108, 61, 103, -112};
+
+        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
+        try
+        {
+            TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
+            fail(tokenBindingMessage + " HttpsTokenBindingServerProcessing processSecTokenBindingHeader should fail on " + encoded);
+        }
+        catch (TBException e)
+        {
+            log.debug("Expected this trying to process Sec-Token-Binding of " + encoded + ": " + e);
+        }
+    }
 
     @Test
     public void v0_10_notsure_from_edge() throws IOException
@@ -512,6 +539,7 @@ public class TokenBindingMessageTest
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
         assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
         assertNotNull(providedTokenBinding.getOpaqueTokenBindingID());
+
         TokenBinding referred = tbMessage.getReferredTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(referred.getSignatureResult().getStatus()));
         assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(referred.getKeyParamsIdentifier()));
