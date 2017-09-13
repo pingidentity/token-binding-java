@@ -8,6 +8,8 @@ import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Base64;
 
 /**
  *
@@ -44,28 +46,32 @@ public class HttpsTokenBindingServerProcessing
             throw new TBException(msg);
         }
 
+        byte[] tbmBytes = Base64.getUrlDecoder().decode(encodedTokenBindingMessage);
+
         TokenBindingMessage tokenBindingMessage;
         try
         {
-            tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encodedTokenBindingMessage, ekm);
+            tokenBindingMessage = TokenBindingMessage.fromBytes(tbmBytes, ekm);
         }
         catch (IOException e)
         {
-            String msg = "Unexpected problem processing the Token Binding message: " + e.getMessage();
+            String msg = String.format("Unexpected problem processing the Token Binding message %s: %s", bts(tbmBytes), e);
             throw new TBException(msg, e);
         }
 
         TokenBinding providedTokenBinding = tokenBindingMessage.getProvidedTokenBinding();
         if (providedTokenBinding == null)
         {
-            throw new TBException("The Token Binding message does not contain a provided_token_binding.");
+            String msg = String.format("The Token Binding message does not contain a provided_token_binding %s", bts(tbmBytes));
+            throw new TBException(msg);
         }
 
         SignatureResult signatureResult = providedTokenBinding.getSignatureResult();
         SignatureResult.Status sigStatus = signatureResult.getStatus();
         if (sigStatus != SignatureResult.Status.VALID)
         {
-            String msg = String.format("The signature of the provided Token Binding is not valid (%s)", signatureResult);
+            String msg = String.format("The signature of the provided Token Binding is not valid (%s) Token Binding message %s EKM %s",
+                    signatureResult, bts(tbmBytes), bts(ekm));
             throw new TBException(msg);
         }
 
@@ -83,7 +89,8 @@ public class HttpsTokenBindingServerProcessing
             SignatureResult.Status referredSigStatus = referredSignatureResult.getStatus();
             if (referredSigStatus != SignatureResult.Status.VALID)  // maybe allow unknown todo
             {
-                String msg = String.format("The signature of the referred Token Binding is not valid (%s)", referredSignatureResult);
+                String msg = String.format("The signature of the referred Token Binding is not valid (%s) Token Binding message %s EKM %s ",
+                        referredSignatureResult, bts(tbmBytes), bts(ekm));
                 throw new TBException(msg);
             }
         }
@@ -91,6 +98,10 @@ public class HttpsTokenBindingServerProcessing
         return tokenBindingMessage;
     }
 
+    private static String bts(byte[] bytes)
+    {
+        return Arrays.toString(bytes);
+    }
 
     public static class TlsTbInfo
     {

@@ -67,7 +67,7 @@ public class TokenBindingMessage
 
         if (tokenBindingMessage.getTokenBindings().isEmpty())
         {
-            throw new IOException("There must be at least one TokenBinding structure in the Token Binding message " + Arrays.toString(tokenBindingMessageBytes));
+            throw new IOException("No TokenBinding structure in the Token Binding message but there must be at least one.");
         }
 
         return tokenBindingMessage;
