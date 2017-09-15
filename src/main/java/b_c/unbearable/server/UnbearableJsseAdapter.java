@@ -1,4 +1,4 @@
-package b_c.unbearable.messages.https;
+package b_c.unbearable.server;
 
 import javax.net.ssl.SSLEngine;
 import java.lang.reflect.InvocationTargetException;

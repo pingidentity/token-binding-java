@@ -4,15 +4,14 @@ import b_c.unbearable.messages.SignatureResult;
 import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingKeyParameters;
 import b_c.unbearable.messages.TokenBindingMessage;
-import b_c.unbearable.messages.https.HttpsTokenBindingServerProcessing;
-import b_c.unbearable.messages.https.TBException;
+import b_c.unbearable.server.HttpsTokenBindingServerProcessing;
+import b_c.unbearable.server.TBException;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.Base64;
 
 import static org.hamcrest.CoreMatchers.*;

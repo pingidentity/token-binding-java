@@ -1,13 +1,10 @@
-package b_c.unbearable.messages.https;
+package b_c.unbearable.server;
 
 import b_c.unbearable.messages.SignatureResult;
 import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingMessage;
 
-import javax.net.ssl.SSLEngine;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Base64;
 
