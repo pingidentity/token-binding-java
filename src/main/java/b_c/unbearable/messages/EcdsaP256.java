@@ -36,10 +36,10 @@ public class EcdsaP256 extends TokenBindingKeyParameters
     }
 
     @Override
-    SignatureResult evaluateSignature(byte[] ekm, byte[] signature, PublicKey publicKey) throws IOException
+    SignatureResult evaluateSignature(byte[] signatureInput, byte[] signature, PublicKey publicKey) throws IOException
     {
         byte[] convertedSignature = convertConcatenatedToDer(signature);
-        return super.evaluateSignature(ekm, convertedSignature, publicKey);
+        return super.evaluateSignature(signatureInput, convertedSignature, publicKey);
     }
 
     @Override
