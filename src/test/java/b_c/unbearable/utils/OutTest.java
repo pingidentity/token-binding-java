@@ -1,6 +1,5 @@
-package b_c.unbearable.messages.utils;
+package b_c.unbearable.utils;
 
-import b_c.unbearable.messages.utils.Out;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -1,8 +1,8 @@
 package b_c.unbearable.messages;
 
-import b_c.unbearable.messages.utils.In;
-import b_c.unbearable.messages.utils.KeyUtil;
-import b_c.unbearable.messages.utils.Util;
+import b_c.unbearable.utils.In;
+import b_c.unbearable.utils.KeyUtil;
+import b_c.unbearable.utils.Util;
 
 import java.io.IOException;
 import java.security.PublicKey;

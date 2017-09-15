@@ -1,7 +1,7 @@
 package b_c.unbearable.messages;
 
-import b_c.unbearable.messages.utils.ExceptionUtil;
-import b_c.unbearable.messages.utils.In;
+import b_c.unbearable.utils.ExceptionUtil;
+import b_c.unbearable.utils.In;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
