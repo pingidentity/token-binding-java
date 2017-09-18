@@ -53,14 +53,14 @@ public class OutTest
         assertThat(bytes[0], equalTo(value));
     }
 
-    @Test (expected = IOException.class)
+    @Test (expected = IllegalArgumentException.class)
     public void oneByteIntTooBig() throws Exception
     {
         Out out = new Out();
         out.putOneByteInt((int) Math.pow(2,8));
     }
 
-    @Test (expected = IOException.class)
+    @Test (expected = IllegalArgumentException.class)
     public void twoByteIntTooBig() throws Exception
     {
         Out out = new Out();
@@ -86,21 +86,21 @@ public class OutTest
         }
     }
 
-    @Test (expected = IOException.class)
+    @Test (expected = IllegalArgumentException.class)
     public void oneByteOfBytesOneTooMany() throws Exception
     {
         Out out = new Out();
         out.putOneByteOfBytes(new byte[256]);
     }
 
-    @Test (expected = IOException.class)
+    @Test (expected = IllegalArgumentException.class)
     public void oneByteOfBytesLotsTooMany() throws Exception
     {
         Out out = new Out();
         out.putOneByteOfBytes(new byte[399]);
     }
 
-    @Test (expected = IOException.class)
+    @Test (expected = IllegalArgumentException.class)
     public void twoBytesOfBytesOneTooMany() throws Exception
     {
         Out out = new Out();

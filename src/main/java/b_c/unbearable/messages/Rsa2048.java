@@ -1,9 +1,12 @@
 package b_c.unbearable.messages;
 
 import b_c.unbearable.utils.In;
-import b_c.unbearable.utils.KeyUtil;
+import b_c.unbearable.utils.Out;
+import b_c.unbearable.utils.RsaKeyUtil;
+import b_c.unbearable.utils.Util;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
@@ -20,7 +23,21 @@ public abstract class Rsa2048 extends TokenBindingKeyParameters
     {
         byte[] modulus = in.readTwoBytesOfBytes();
         byte[] publicExponent = in.readOneByteOfBytes();
-        return KeyUtil.rsaPublicKey(modulus, publicExponent);
+        return RsaKeyUtil.rsaPublicKey(modulus, publicExponent);
+    }
+
+    @Override
+    public byte[] encodeTokenBindingPublicKey(PublicKey publicKey)
+    {
+        RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
+        BigInteger modulusInt = rsaPublicKey.getModulus();
+        byte[] modulus = Util.toUnsignedMagnitudeByteArray(modulusInt);
+        BigInteger publicExponentInt = rsaPublicKey.getPublicExponent();
+        byte[] publicExponent = Util.toUnsignedMagnitudeByteArray(publicExponentInt);
+        Out out = new Out();
+        out.putTwoBytesOfBytes(modulus);
+        out.putOneByteOfBytes(publicExponent);
+        return out.toByteArray();
     }
 
     @Override

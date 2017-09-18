@@ -4,9 +4,11 @@ import b_c.unbearable.utils.ExceptionUtil;
 import b_c.unbearable.utils.In;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -21,7 +23,9 @@ public abstract class TokenBindingKeyParameters
     public static final byte RSA2048_PSS = 1;
     public static final byte ECDSAP256 = 2;
 
-    static TokenBindingKeyParameters fromIdentifier(byte identifier) throws IOException
+    // TODO some kind of check if available
+
+    public static TokenBindingKeyParameters fromIdentifier(byte identifier)
     {
         switch (identifier)
         {
@@ -39,6 +43,8 @@ public abstract class TokenBindingKeyParameters
     abstract byte getIdentifier();
 
     abstract PublicKey readPublicKey(In in, int length) throws IOException;
+
+    public abstract byte[] encodeTokenBindingPublicKey(PublicKey publicKey);
 
     abstract String getJavaAlgorithm();
 
@@ -92,6 +98,20 @@ public abstract class TokenBindingKeyParameters
 
     }
 
+    public byte[] sign(byte[] signatureInput, PrivateKey privateKey) throws GeneralSecurityException
+    {
+        Signature signer = Signature.getInstance(getJavaAlgorithm());
+        AlgorithmParameterSpec algorithmParameterSpec = getJavaAlgorithmParameterSpec();
+        if (algorithmParameterSpec != null)
+        {
+            signer.setParameter(algorithmParameterSpec);
+        }
+
+        signer.initSign(privateKey);
+        signer.update(signatureInput);
+        return signer.sign();
+    }
+
 
     static class UnknownKeyParameters extends TokenBindingKeyParameters
     {
@@ -119,6 +139,12 @@ public abstract class TokenBindingKeyParameters
         }
 
         @Override
+        public byte[] encodeTokenBindingPublicKey(PublicKey publicKey)
+        {
+            return new byte[0];
+        }
+
+        @Override
         String getJavaAlgorithm()
         {
             return "UNKNOWN";
@@ -136,6 +162,12 @@ public abstract class TokenBindingKeyParameters
             SignatureResult signatureResult = new SignatureResult(SignatureResult.Status.UNEVALUATED);
             signatureResult.addComment("Unknown Token Binding Key Parameters type: " + getIdentifier());
             return signatureResult;
+        }
+
+        @Override
+        public byte[] sign(byte[] signatureInput, PrivateKey privateKey) throws GeneralSecurityException
+        {
+            throw new GeneralSecurityException("Cannot sign with unknown Token Binding Key Parameters type: " + getIdentifier());
         }
     }
 }

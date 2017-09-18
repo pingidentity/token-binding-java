@@ -22,6 +22,11 @@ public class TokenBinding
         return tokenBindingID.rawTokenBindingID;
     }
 
+    public TokenBindingID getTokenBindingID()
+    {
+        return tokenBindingID;
+    }
+
     public byte getKeyParamsIdentifier()
     {
         return tokenBindingID.tokenBindingKeyParameters.getIdentifier();

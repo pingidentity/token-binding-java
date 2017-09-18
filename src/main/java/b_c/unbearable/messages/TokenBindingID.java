@@ -18,4 +18,19 @@ public class TokenBindingID
     TokenBindingKeyParameters tokenBindingKeyParameters;
 
     PublicKey publicKey;
+
+    public byte[] getRawTokenBindingID()
+    {
+        return rawTokenBindingID;
+    }
+
+    public TokenBindingKeyParameters getTokenBindingKeyParameters()
+    {
+        return tokenBindingKeyParameters;
+    }
+
+    public PublicKey getPublicKey()
+    {
+        return publicKey;
+    }
 }

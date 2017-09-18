@@ -1,12 +1,16 @@
 package b_c.unbearable.messages;
 
+import b_c.unbearable.utils.EcKeyUtil;
 import b_c.unbearable.utils.In;
-import b_c.unbearable.utils.KeyUtil;
 import b_c.unbearable.utils.Util;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECPoint;
 
 
 /**
@@ -14,13 +18,28 @@ import java.security.interfaces.ECPublicKey;
  */
 public class EcdsaP256 extends TokenBindingKeyParameters
 {
+    static final int COORDINATE_LENGTH = 32;
+    static final byte[] POINT_LENGTH = new byte[] { COORDINATE_LENGTH * 2 };
+
     @Override
     PublicKey readPublicKey(In in, int length) throws IOException
     {
         byte[] point = in.readOneByteOfBytes();
         byte[] x = Util.leftHalf(point);
         byte[] y = Util.rightHalf(point);
-        return KeyUtil.p256publicKey(x, y);
+        return EcKeyUtil.p256publicKey(x, y);
+    }
+
+    @Override
+    public byte[] encodeTokenBindingPublicKey(PublicKey publicKey)
+    {
+        ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+        ECPoint ecPoint = ecPublicKey.getW();
+        BigInteger xInt = ecPoint.getAffineX();
+        byte[] x = Util.toUnsignedMagnitudeByteArray(xInt, COORDINATE_LENGTH);
+        BigInteger yInt = ecPoint.getAffineY();
+        byte[] y = Util.toUnsignedMagnitudeByteArray(yInt, COORDINATE_LENGTH);
+        return Util.concat(POINT_LENGTH, x,y);
     }
 
     @Override
@@ -40,6 +59,20 @@ public class EcdsaP256 extends TokenBindingKeyParameters
     {
         byte[] convertedSignature = convertConcatenatedToDer(signature);
         return super.evaluateSignature(signatureInput, convertedSignature, publicKey);
+    }
+
+    @Override
+    public byte[] sign(byte[] signatureInput, PrivateKey privateKey) throws GeneralSecurityException
+    {
+        byte[] encodedSignatureBytes = super.sign(signatureInput, privateKey);
+        try
+        {
+            return convertDerToConcatenated(encodedSignatureBytes, 64);
+        }
+        catch (IOException e)
+        {
+            throw new GeneralSecurityException("Unable to convert DER encoding to R and S as a concatenated byte array.", e);
+        }
     }
 
     @Override
