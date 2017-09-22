@@ -22,7 +22,7 @@ public class EcdsaP256 extends TokenBindingKeyParameters
     static final byte[] POINT_LENGTH = new byte[] { COORDINATE_LENGTH * 2 };
 
     @Override
-    PublicKey readPublicKey(In in, int length) throws IOException
+    PublicKey readPublicKey(In in, int length) throws IOException, GeneralSecurityException
     {
         byte[] point = in.readOneByteOfBytes();
         byte[] x = Util.leftHalf(point);

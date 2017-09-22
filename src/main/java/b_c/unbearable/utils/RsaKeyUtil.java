@@ -17,18 +17,11 @@ public class RsaKeyUtil
 
     public static final String RSA = "RSA";
 
-    public static RSAPublicKey rsaPublicKey(byte[] modulus, byte[] publicExponent)
+    public static RSAPublicKey rsaPublicKey(byte[] modulus, byte[] publicExponent) throws GeneralSecurityException
     {
-        try
-        {
-            RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(Util.bigInt(modulus), Util.bigInt(publicExponent));
-            KeyFactory kf = KeyFactory.getInstance(RSA);
-            return (RSAPublicKey) kf.generatePublic(rsaPublicKeySpec);
-        }
-        catch (NoSuchAlgorithmException | InvalidKeySpecException e)
-        {
-            throw new RuntimeException("Unable to create RSAPublicKey object from modulus & public exponent byte arrays", e);// TODO type
-        }
+        RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(Util.bigInt(modulus), Util.bigInt(publicExponent));
+        KeyFactory kf = KeyFactory.getInstance(RSA);
+        return (RSAPublicKey) kf.generatePublic(rsaPublicKeySpec);
     }
 
     public static KeyPair generate2048RsaKeyPair() throws GeneralSecurityException

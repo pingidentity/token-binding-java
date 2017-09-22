@@ -5,6 +5,7 @@ import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingMessage;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -29,7 +30,7 @@ public class HttpsTokenBindingServerProcessing
         {
             tokenBindingMessage = TokenBindingMessage.fromBytes(tbmBytes, ekm);
         }
-        catch (IOException e)
+        catch (IOException | GeneralSecurityException e)
         {
             String msg = String.format("Unexpected problem processing the Token Binding message %s: %s", bts(tbmBytes), e);
             throw new TBException(msg, e);

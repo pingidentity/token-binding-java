@@ -42,7 +42,7 @@ public abstract class TokenBindingKeyParameters
 
     abstract byte getIdentifier();
 
-    abstract PublicKey readPublicKey(In in, int length) throws IOException;
+    abstract PublicKey readPublicKey(In in, int length) throws IOException, GeneralSecurityException;
 
     public abstract byte[] encodeTokenBindingPublicKey(PublicKey publicKey);
 

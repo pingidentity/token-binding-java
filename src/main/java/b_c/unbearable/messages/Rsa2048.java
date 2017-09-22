@@ -7,6 +7,7 @@ import b_c.unbearable.utils.Util;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
@@ -19,7 +20,7 @@ import java.security.spec.PSSParameterSpec;
 public abstract class Rsa2048 extends TokenBindingKeyParameters
 {
     @Override
-    PublicKey readPublicKey(In in, int length) throws IOException
+    PublicKey readPublicKey(In in, int length) throws IOException, GeneralSecurityException
     {
         byte[] modulus = in.readTwoBytesOfBytes();
         byte[] publicExponent = in.readOneByteOfBytes();

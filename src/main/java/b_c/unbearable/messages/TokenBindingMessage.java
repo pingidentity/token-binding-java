@@ -4,6 +4,7 @@ import b_c.unbearable.utils.In;
 import b_c.unbearable.utils.Util;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +16,7 @@ public class TokenBindingMessage
 {
     private List<TokenBinding> tokenBindings = new ArrayList<>();
 
-    public static TokenBindingMessage fromBytes(byte[] tokenBindingMessageBytes, byte[] ekm) throws IOException
+    public static TokenBindingMessage fromBytes(byte[] tokenBindingMessageBytes, byte[] ekm) throws IOException, GeneralSecurityException
     {
             In in = new In(tokenBindingMessageBytes);
             int len = in.readTwoByteInt();

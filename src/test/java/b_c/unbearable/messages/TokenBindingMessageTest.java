@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Base64;
 
@@ -50,7 +51,7 @@ public class TokenBindingMessageTest
 
 
     @Test
-    public void v0_10_singleProvidedECDSAP256_from_edge() throws IOException
+    public void v0_10_singleProvidedECDSAP256_from_edge() throws Exception
     {
         // from Andrei's private reply to https://www.ietf.org/mail-archive/web/unbearable/current/msg01332.html
         // and log files
@@ -79,7 +80,7 @@ public class TokenBindingMessageTest
     }
 
     @Test
-    public void v0_10_singleProvidedECDSAP256() throws IOException
+    public void v0_10_singleProvidedECDSAP256() throws Exception
     {
         String encoded = "AIkAAgBBQLlO7EVk3V2g3-zmgRpq2qKfbw6F1rZ97Y15siYmjuy3U5CKNcwXnrHYqM87PcilegJ7Ooxd7KpiRGRIp" +
                 "5jCAXoAQCLhZIeSUTWv3ETKb9qPDyWzxmQlwFDFkmeGSophCtEEdfOnsKotZNOgQ3Fz3DIwHZb-GqdkjoHiVN_hAE5dG-gAAA";
@@ -131,7 +132,7 @@ public class TokenBindingMessageTest
     }
 
     @Test
-    public void v0_10_simpleUnknownKeyParamType() throws IOException
+    public void v0_10_simpleUnknownKeyParamType() throws Exception
     {
         byte unknownType = 88;
         byte[] tbmsg =
@@ -156,7 +157,7 @@ public class TokenBindingMessageTest
     }
 
     @Test
-    public void v0_10_providedECDSAP256AndUnknownReferred() throws IOException
+    public void v0_10_providedECDSAP256AndUnknownReferred() throws Exception
     {
         byte unknownType = 96;
         byte[] tokenBindingMessage = {1,18,0,2,0,65,64,-71,78,-20,69,100,-35,93,-96,-33,-20,-26,-127,26,106,-38,-94,-97,111,14,-123,-42,
@@ -187,7 +188,7 @@ public class TokenBindingMessageTest
     }
 
     @Test
-    public void v0_10_UnknownProvidedAndReferredECDSAP256() throws IOException
+    public void v0_10_UnknownProvidedAndReferredECDSAP256() throws Exception
     {
         byte unknownType = 96;
         byte[] tokenBindingMessage = {1,18,0,unknownType,0,65,64,-71,78,-20,69,100,-35,93,-96,-33,-20,-26,-127,26,106,-38,-94,-97,111,14,-123,-42,
@@ -219,7 +220,7 @@ public class TokenBindingMessageTest
 
 
     @Test
-    public void v0_13_singleProvidedECDSAP256() throws IOException
+    public void v0_13_singleProvidedECDSAP256() throws Exception
     {
         // also used in Token Binding for Refresh Tokens Example in https://tools.ietf.org/html/draft-ietf-oauth-token-binding-02
         String encodedTBM = "AIkAAgBBQGto7hHRR0Y5nkOWqc9KNfwW95dEFmSI_tCZ_Cbl7LWlt6Xjp3DbjiDJavGFiKP2HV_2JSE42VzmKOVVV8" +
@@ -535,7 +536,7 @@ public class TokenBindingMessageTest
 
 
 
-    public static TokenBindingMessage fromBase64urlEncoded(String encodedTokenBindingMessage, byte[] ekm) throws IOException
+    public static TokenBindingMessage fromBase64urlEncoded(String encodedTokenBindingMessage, byte[] ekm) throws IOException, GeneralSecurityException
     {
         byte[] tokenBindingMessageBytes = Base64.getUrlDecoder().decode(encodedTokenBindingMessage);
         return TokenBindingMessage.fromBytes(tokenBindingMessageBytes, ekm);
