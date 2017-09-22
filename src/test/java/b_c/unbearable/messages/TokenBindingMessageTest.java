@@ -1,9 +1,5 @@
-package b_c.unbearable.messages.publicapitest;
+package b_c.unbearable.messages;
 
-import b_c.unbearable.messages.SignatureResult;
-import b_c.unbearable.messages.TokenBinding;
-import b_c.unbearable.messages.TokenBindingKeyParameters;
-import b_c.unbearable.messages.TokenBindingMessage;
 import b_c.unbearable.server.HttpsTokenBindingServerProcessing;
 import b_c.unbearable.server.TBException;
 import org.junit.Test;
