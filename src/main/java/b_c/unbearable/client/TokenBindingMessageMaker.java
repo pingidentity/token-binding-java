@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class TokenBindingMessageMaker
 {
+    private static final byte[] NO_EXTENSIONS = new byte[0];
+
     private byte[] ekm;
     List<TB> tokenBindings = new ArrayList<>();
 
@@ -26,17 +28,17 @@ public class TokenBindingMessageMaker
 
     public TokenBindingMessageMaker providedTokenBinding(byte keyParamsType, KeyPair keyPair)
     {
-        return tokenBinding(TokenBindingType.PROVIDED, keyParamsType, keyPair);
+        return tokenBinding(TokenBindingType.PROVIDED, keyParamsType, keyPair, NO_EXTENSIONS);
     }
 
     public TokenBindingMessageMaker referredTokenBinding(byte keyParamsType, KeyPair keyPair)
     {
-        return tokenBinding(TokenBindingType.REFERRED, keyParamsType, keyPair);
+        return tokenBinding(TokenBindingType.REFERRED, keyParamsType, keyPair, NO_EXTENSIONS);
     }
 
-    public TokenBindingMessageMaker tokenBinding(byte tokenBindingType, byte keyParamsType, KeyPair keyPair)
+    public TokenBindingMessageMaker tokenBinding(byte tokenBindingType, byte keyParamsType, KeyPair keyPair, byte[] extensions)
     {
-        tokenBindings.add(new TB(tokenBindingType, keyParamsType, keyPair));
+        tokenBindings.add(new TB(tokenBindingType, keyParamsType, keyPair, extensions));
         return this;
     }
 
@@ -46,6 +48,10 @@ public class TokenBindingMessageMaker
         for (TB tb : tokenBindings)
         {
             TokenBindingKeyParameters tbKeyParams = TokenBindingKeyParameters.fromIdentifier(tb.keyParamsType);
+            if (ekm == null)
+            {
+                throw new IllegalArgumentException("An EKM was not provided");
+            }
             final byte[] signatureInput = Util.signatureInput(tb.tokenBindingType, tb.keyParamsType, ekm);
             final byte[] signature = tbKeyParams.sign(signatureInput, tb.keyPair.getPrivate());
             byte[] tokenBindingPublicKey = tbKeyParams.encodeTokenBindingPublicKey(tb.keyPair.getPublic());
@@ -58,7 +64,7 @@ public class TokenBindingMessageMaker
             tbOut.putOneByteInt(Util.intFromByte(tb.tokenBindingType));
             tbOut.write(tokenBindingId);
             tbOut.putTwoBytesOfBytes(signature);
-            tbOut.putTwoBytesOfBytes(new byte[0]); // empty extensions for now TODO
+            tbOut.putTwoBytesOfBytes(tb.extensions);
             byte[] tokenBinding = tbOut.toByteArray();
             tokenBindingsOut.write(tokenBinding);
         }
@@ -75,12 +81,14 @@ public class TokenBindingMessageMaker
         byte tokenBindingType;
         byte keyParamsType;
         KeyPair keyPair;
+        byte[] extensions;
 
-        TB(byte tokenBindingType, byte keyParamsType, KeyPair keyPair)
+        TB(byte tokenBindingType, byte keyParamsType, KeyPair keyPair, byte[] extensions)
         {
             this.tokenBindingType = tokenBindingType;
             this.keyParamsType = keyParamsType;
             this.keyPair = keyPair;
+            this.extensions = extensions;
         }
     }
 }

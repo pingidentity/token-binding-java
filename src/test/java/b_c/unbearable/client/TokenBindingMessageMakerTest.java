@@ -19,6 +19,7 @@ import java.util.Base64;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -58,8 +59,11 @@ public class TokenBindingMessageMakerTest
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(64, equalTo(provided.getSignature().length));
         assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
         assertNull(tokenBindingMessage.getReferredTokenBinding());
+
+        assertTrue(provided.getExtensions().length == 0);
 
         PublicKey publicKey = provided.getTokenBindingID().getPublicKey();
         assertThat(keyPair.getPublic(), equalTo(publicKey));
@@ -242,6 +246,57 @@ public class TokenBindingMessageMakerTest
         assertThat(TokenBindingKeyParameters.RSA2048_PKCS1_5, equalTo(referred.getKeyParamsIdentifier()));
         PublicKey publicKeyReferred = referred.getTokenBindingID().getPublicKey();
         assertThat(keyPairForReferred.getPublic(), equalTo(publicKeyReferred));
+    }
+
+
+    @Test
+    public void makeEcProvidedWithFakeExtension() throws Exception
+    {
+        byte[] ekm = new byte[] {89, 9, 12, 43, 71, 44, 2, -10, 35, -19, -21, 57, 43, 39, -107, -17, -92, -8,
+                99, 64, 122, 56, -69, 83, 17, 77, 89, -14, -49, -39, 83, -71};
+
+        KeyPair keyPair = EcKeyUtil.generateEcP256KeyPair();
+        byte[] extensions = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        TokenBindingMessageMaker maker = new TokenBindingMessageMaker()
+                .ekm(ekm)
+                .tokenBinding(TokenBindingType.PROVIDED, TokenBindingKeyParameters.ECDSAP256, keyPair, extensions);
+        byte[] tbMsg = maker.makeTokenBindingMessage();
+
+        // a few checks for expected content
+
+        assertThat(TokenBindingType.PROVIDED, equalTo(tbMsg[2]));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(tbMsg[3]));
+
+        assertThat((byte)0, equalTo(tbMsg[4]));
+        assertThat((byte)65, equalTo(tbMsg[5]));
+        assertThat((byte)64, equalTo(tbMsg[6]));
+
+        assertThat((byte)0, equalTo(tbMsg[71]));
+        assertThat((byte)64, equalTo(tbMsg[72]));
+
+        assertThat((byte)0, equalTo(tbMsg[tbMsg.length - 10]));
+        assertThat((byte)1, equalTo(tbMsg[tbMsg.length - 9]));
+        assertThat((byte)2, equalTo(tbMsg[tbMsg.length - 8]));
+        assertThat((byte)3, equalTo(tbMsg[tbMsg.length - 7]));
+        assertThat((byte)4, equalTo(tbMsg[tbMsg.length - 6]));
+        assertThat((byte)5, equalTo(tbMsg[tbMsg.length - 5]));
+        assertThat((byte)6, equalTo(tbMsg[tbMsg.length - 4]));
+        assertThat((byte)7, equalTo(tbMsg[tbMsg.length - 3]));
+        assertThat((byte)8, equalTo(tbMsg[tbMsg.length - 2]));
+        assertThat((byte)9, equalTo(tbMsg[tbMsg.length - 1]));
+
+        // and then process it
+        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBytes(tbMsg, ekm);
+        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+
+        assertThat(extensions, equalTo(provided.getExtensions()));
+
+        PublicKey publicKey = provided.getTokenBindingID().getPublicKey();
+        assertThat(keyPair.getPublic(), equalTo(publicKey));
     }
 
     @Test

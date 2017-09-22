@@ -31,4 +31,14 @@ public class TokenBinding
     {
         return tokenBindingID.tokenBindingKeyParameters.getIdentifier();
     }
+
+    public byte[] getExtensions()
+    {
+        return extensions;
+    }
+
+    public byte[] getSignature()
+    {
+        return signature;
+    }
 }
