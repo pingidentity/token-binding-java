@@ -1,7 +1,5 @@
 package b_c.unbearable.messages;
 
-import b_c.unbearable.server.HttpsTokenBindingServerProcessing;
-import b_c.unbearable.server.TBException;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,27 +20,6 @@ public class TokenBindingMessageTest
     private static final Logger log = LoggerFactory.getLogger(TokenBindingMessageTest.class);
 
     @Test
-    public void empty_tb_msg() throws Exception
-    {
-        // Saw some errors at
-        // https://www.ietf.org/mail-archive/web/unbearable/current/msg01332.html
-        // that were the result of AAA being sent as the Sec-Token-Binding header
-        String encoded = "AAA";
-        byte[] ekm = new byte[] {-116, 19, 118, -122, 78, 115, 98, 116, -124, -110, -62, -108, -59, 63, -39, -119, -123, 124, -39, -3, -7, 94, 18, 10, 67, -79, -94, 67, -108, 61, 103, -112};
-
-        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
-        try
-        {
-            TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
-            fail(tokenBindingMessage + " HttpsTokenBindingServerProcessing processSecTokenBindingHeader should fail on " + encoded);
-        }
-        catch (TBException e)
-        {
-            log.debug("Expected this trying to process Sec-Token-Binding of " + encoded + ": " + e);
-        }
-    }
-
-    @Test
     public void v0_10_notsure_from_edge() throws Exception
     {
         // from Andrei's private reply to https://www.ietf.org/mail-archive/web/unbearable/current/msg01332.html
@@ -60,15 +37,6 @@ public class TokenBindingMessageTest
 
         assertNull(tokenBindingMessage.getReferredTokenBinding());
 
-        // check it with HttpsTokenBindingServerProcessing too
-        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
-        tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
-        assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
-        provided = tokenBindingMessage.getProvidedTokenBinding();
-        assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
-        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
-
-
         // now change the ekm and make sure it parses but has an invalid signature
         ekm[0] = 77;
         tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
@@ -78,19 +46,6 @@ public class TokenBindingMessageTest
         assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
         assertNotNull(provided.getOpaqueTokenBindingID());
         assertNull(tokenBindingMessage.getReferredTokenBinding());
-
-
-        // check that HttpsTokenBindingServerProcessing will reject it
-        try
-        {
-            tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
-            fail(tokenBindingMessage + " shouldn't have gotten here due to invalid signature");
-        }
-        catch (TBException e)
-        {
-            log.debug("Expected this with invalid signature: " + e);
-        }
-
     }
 
 
@@ -170,20 +125,6 @@ public class TokenBindingMessageTest
         assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
         assertNotNull(providedTokenBinding.getOpaqueTokenBindingID());
         TokenBinding referred = tbMessage.getReferredTokenBinding();
-        assertThat(SignatureResult.Status.VALID, equalTo(referred.getSignatureResult().getStatus()));
-        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(referred.getKeyParamsIdentifier()));
-        assertNotNull(referred.getOpaqueTokenBindingID());
-
-
-        // check it with HttpsTokenBindingServerProcessing too
-        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
-        tbMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
-
-        providedTokenBinding = tbMessage.getProvidedTokenBinding();
-        assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
-        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
-        assertNotNull(providedTokenBinding.getOpaqueTokenBindingID());
-        referred = tbMessage.getReferredTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(referred.getSignatureResult().getStatus()));
         assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(referred.getKeyParamsIdentifier()));
         assertNotNull(referred.getOpaqueTokenBindingID());
