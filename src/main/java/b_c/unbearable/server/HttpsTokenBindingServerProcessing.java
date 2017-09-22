@@ -63,7 +63,7 @@ public class HttpsTokenBindingServerProcessing
         {
             SignatureResult referredSignatureResult = referredTokenBinding.getSignatureResult();
             SignatureResult.Status referredSigStatus = referredSignatureResult.getStatus();
-            if (referredSigStatus != SignatureResult.Status.VALID)  // maybe allow unknown todo
+            if (referredSigStatus == SignatureResult.Status.INVALID)
             {
                 String msg = String.format("The signature of the referred Token Binding is not valid (%s) Token Binding message %s EKM %s ",
                         referredSignatureResult, bts(tbmBytes), bts(ekm));
