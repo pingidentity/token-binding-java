@@ -8,6 +8,7 @@ import b_c.unbearable.utils.Util;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -40,6 +41,11 @@ public class TokenBindingMessageMaker
     {
         tokenBindings.add(new TB(tokenBindingType, keyParamsType, keyPair, extensions));
         return this;
+    }
+
+    public String makeEncodedTokenBindingMessage() throws GeneralSecurityException
+    {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(makeTokenBindingMessage());
     }
 
     public byte[] makeTokenBindingMessage() throws GeneralSecurityException

@@ -6,6 +6,7 @@ import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingKeyParameters;
 import b_c.unbearable.messages.TokenBindingMessage;
 import b_c.unbearable.messages.TokenBindingType;
+import b_c.unbearable.server.HttpsTokenBindingServerProcessing;
 import b_c.unbearable.utils.EcKeyUtil;
 import b_c.unbearable.utils.RsaKeyUtil;
 import b_c.unbearable.utils.Util;
@@ -294,6 +295,33 @@ public class TokenBindingMessageMakerTest
         assertNull(tokenBindingMessage.getReferredTokenBinding());
 
         assertThat(extensions, equalTo(provided.getExtensions()));
+
+        PublicKey publicKey = provided.getTokenBindingID().getPublicKey();
+        assertThat(keyPair.getPublic(), equalTo(publicKey));
+    }
+
+    @Test
+    public void roundTripEncoded() throws Exception
+    {
+        KeyPair keyPair = EcKeyUtil.generateEcP256KeyPair();
+        byte[] ekm = new byte[] {19, 88, 110, 75, 7, -82, -21, -77, 23, 5, -21, 57, 43, 39, -107, -17, -92, -8,
+                22, 6, 102, 66, -99, 33, 17, 7, -118, -45, 9, -33, -33, 60};
+        byte keyParamsType = TokenBindingKeyParameters.ECDSAP256;
+        TokenBindingMessageMaker tbmm = new TokenBindingMessageMaker()
+                .ekm(ekm)
+                .providedTokenBinding(keyParamsType, keyPair);
+        String encodedTokenBindingMessage = tbmm.makeEncodedTokenBindingMessage();
+
+        HttpsTokenBindingServerProcessing httpsTokenBindingServerProcessing = new HttpsTokenBindingServerProcessing();
+        TokenBindingMessage tbMessage = httpsTokenBindingServerProcessing.processSecTokenBindingHeader(encodedTokenBindingMessage, keyParamsType, ekm);
+
+        assertThat(1, equalTo(tbMessage.getTokenBindings().size()));
+        TokenBinding provided = tbMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+        assertNull(tbMessage.getReferredTokenBinding());
+
+        assertTrue(provided.getExtensions().length == 0);
 
         PublicKey publicKey = provided.getTokenBindingID().getPublicKey();
         assertThat(keyPair.getPublic(), equalTo(publicKey));
