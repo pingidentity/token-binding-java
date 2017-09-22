@@ -52,7 +52,7 @@ public class TokenBindingMessageTest
 
         byte[] ekm = new byte[] {-4, -53, -33, 70, 27, -117, 62, -44, 51, 28, 49, -38, 84, 0, -22, 55, 22, -105, -8, 70, -120, -21, -76, 118, 112, -26, 77, 44, -106, 34, -98, -122};
 
-        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
@@ -71,7 +71,7 @@ public class TokenBindingMessageTest
 
         // now change the ekm and make sure it parses but has an invalid signature
         ekm[0] = 77;
-        tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.INVALID, equalTo(provided.getSignatureResult().getStatus()));
@@ -104,7 +104,7 @@ public class TokenBindingMessageTest
 
         byte[] ekm = new byte[] {27, -39, -91, -27, 0, -5, -23, 82, 104, 99, 120, -118, 39, -39, 65, -126, -55, 105, -4, -108, -60, 12, 118, -40, -103, -94, -56, -50, 121, -11, 72, 58};
 
-        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
@@ -114,7 +114,7 @@ public class TokenBindingMessageTest
 
         // now change the ekm and make sure it parses but has an invalid signature
         ekm[0] = 77;
-        tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.INVALID, equalTo(provided.getSignatureResult().getStatus()));
@@ -132,7 +132,7 @@ public class TokenBindingMessageTest
         byte[] ekm = new byte[] {-25, 60, -5, -91, -81, 127, -84, -127, -124, -17, -42, 106, -11, -15, 20, -98, 95,
                 -110, 108, -80, -91, -86, 77, 74, -11, -74, -84, -10, 21, -103, -5, -4};
 
-        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
@@ -142,7 +142,7 @@ public class TokenBindingMessageTest
 
         // now change the ekm and make sure it parses but has an invalid signature
         ekm[0] = 77;
-        tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        tokenBindingMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         provided = tokenBindingMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.INVALID, equalTo(provided.getSignatureResult().getStatus()));
@@ -163,7 +163,7 @@ public class TokenBindingMessageTest
         byte[] ekm = new byte[] {69,-38,67,-123,84,79,45,24,-108,55,-29,-128,-83,2,-34,45,1,1,-121,85,34,-44,-79,-105,-82,
                 124,-92,87,20,-52,65,36};
 
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -292,7 +292,7 @@ public class TokenBindingMessageTest
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
-        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encodedTBM, ekm);
+        TokenBindingMessage tokenBindingMessage = fromBase64urlEncoded(encodedTBM, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         byte[] opaqueTokenBindingID = provided.getOpaqueTokenBindingID();
@@ -311,7 +311,7 @@ public class TokenBindingMessageTest
         encodedEkm = encodedEkm.replaceAll("=", "");
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
-        tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encodedTBM, ekm);
+        tokenBindingMessage = fromBase64urlEncoded(encodedTBM, ekm);
         assertThat(SignatureResult.Status.VALID, equalTo(tokenBindingMessage.getProvidedTokenBinding().getSignatureResult().getStatus()));
         assertArrayEquals(opaqueTokenBindingID, tokenBindingMessage.getProvidedTokenBinding().getOpaqueTokenBindingID());
     }
@@ -329,7 +329,7 @@ public class TokenBindingMessageTest
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
-        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encodedTBM, ekm);
+        TokenBindingMessage tokenBindingMessage = fromBase64urlEncoded(encodedTBM, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         byte[] opaqueTokenBindingID = provided.getOpaqueTokenBindingID();
@@ -360,7 +360,7 @@ public class TokenBindingMessageTest
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
-        TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBase64urlEncoded(encodedTBM, ekm);
+        TokenBindingMessage tokenBindingMessage = fromBase64urlEncoded(encodedTBM, ekm);
         assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
         TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
         byte[] opaqueTokenBindingID = provided.getOpaqueTokenBindingID();
@@ -390,7 +390,7 @@ public class TokenBindingMessageTest
         encodedEkm = encodedEkm.replaceAll("=", "");
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -419,7 +419,7 @@ public class TokenBindingMessageTest
         encodedEkm = encodedEkm.replaceAll("=", "");
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -449,7 +449,7 @@ public class TokenBindingMessageTest
         encodedEkm = encodedEkm.replaceAll("=", "");
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -473,7 +473,7 @@ public class TokenBindingMessageTest
 //        System.out.println("EKM: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
-        tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tbMessage.getTokenBindings().size()));
         providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -503,7 +503,7 @@ public class TokenBindingMessageTest
         encodedEkm = encodedEkm.replaceAll("=", "");
         System.out.println("EKM with IDP: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -527,7 +527,7 @@ public class TokenBindingMessageTest
 //        System.out.println("EKM with RP: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
-        tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tbMessage.getTokenBindings().size()));
         providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -564,7 +564,7 @@ public class TokenBindingMessageTest
         encodedEkm = encodedEkm.replaceAll("=", "");
 //        System.out.println("EKM with IDP: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
-        TokenBindingMessage tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -592,7 +592,7 @@ public class TokenBindingMessageTest
 //        System.out.println("EKM with RP: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
-        tbMessage = TokenBindingMessage.fromBase64urlEncoded(encoded, ekm);
+        tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(1, equalTo(tbMessage.getTokenBindings().size()));
         providedTokenBinding = tbMessage.getProvidedTokenBinding();
         assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
@@ -611,5 +611,13 @@ public class TokenBindingMessageTest
         tbh = tbh.replaceAll("=", "");
 //        System.out.println("tbh: " + tbh);
 
+    }
+
+
+
+    public static TokenBindingMessage fromBase64urlEncoded(String encodedTokenBindingMessage, byte[] ekm) throws IOException
+    {
+        byte[] tokenBindingMessageBytes = Base64.getUrlDecoder().decode(encodedTokenBindingMessage);
+        return TokenBindingMessage.fromBytes(tokenBindingMessageBytes, ekm);
     }
 }

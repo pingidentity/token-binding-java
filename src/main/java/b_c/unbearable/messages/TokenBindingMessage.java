@@ -3,11 +3,9 @@ package b_c.unbearable.messages;
 import b_c.unbearable.utils.In;
 import b_c.unbearable.utils.Util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 /**
@@ -16,12 +14,6 @@ import java.util.List;
 public class TokenBindingMessage
 {
     private List<TokenBinding> tokenBindings = new ArrayList<>();
-
-    public static TokenBindingMessage fromBase64urlEncoded(String encodedTokenBindingMessage, byte[] ekm) throws IOException
-    {
-        byte[] tokenBindingMessageBytes = Base64.getUrlDecoder().decode(encodedTokenBindingMessage);
-        return fromBytes(tokenBindingMessageBytes, ekm);
-    }
 
     public static TokenBindingMessage fromBytes(byte[] tokenBindingMessageBytes, byte[] ekm) throws IOException
     {
