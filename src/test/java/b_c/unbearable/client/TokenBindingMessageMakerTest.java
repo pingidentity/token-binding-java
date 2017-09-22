@@ -1,5 +1,6 @@
 package b_c.unbearable.client;
 
+import b_c.unbearable.JceProviderTestSupport;
 import b_c.unbearable.messages.SignatureResult;
 import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingKeyParameters;
@@ -151,6 +152,45 @@ public class TokenBindingMessageMakerTest
 
         PublicKey publicKey = provided.getTokenBindingID().getPublicKey();
         assertThat(keyPair.getPublic(), equalTo(publicKey));
+    }
+
+
+    @Test
+    public void makeRsaPssProvided() throws Exception
+    {
+        JceProviderTestSupport support = new JceProviderTestSupport();
+
+        support.runWithBouncyCastleProvider(() -> {
+
+            byte[] ekm = new byte[] {19, 9, 12, 43, 71, 44, 2, -10, 35, -19, -21, 57, 43, 39, -107, -17, -92, -8,
+                    99, 64, 122, 56, -69, 83, 17, 77, 89, -14, -49, -39, 83, -77};
+
+            KeyPair keyPair = RsaKeyUtil.generate2048RsaKeyPair();
+            TokenBindingMessageMaker maker = new TokenBindingMessageMaker()
+                    .ekm(ekm)
+                    .providedTokenBinding(TokenBindingKeyParameters.RSA2048_PSS, keyPair);
+            byte[] tbMsg = maker.makeTokenBindingMessage();
+
+            // a few checks for expected content
+            assertThat(TokenBindingType.PROVIDED, equalTo(tbMsg[2]));
+            assertThat(TokenBindingKeyParameters.RSA2048_PSS, equalTo(tbMsg[3]));
+
+            assertThat((byte)0, equalTo(tbMsg[tbMsg.length-2]));
+            assertThat((byte)0, equalTo(tbMsg[tbMsg.length-1]));
+
+            // and then process it
+            TokenBindingMessage tokenBindingMessage = TokenBindingMessage.fromBytes(tbMsg, ekm);
+            assertThat(1, equalTo(tokenBindingMessage.getTokenBindings().size()));
+            TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
+            assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+            assertThat(TokenBindingKeyParameters.RSA2048_PSS, equalTo(provided.getKeyParamsIdentifier()));
+            assertNull(tokenBindingMessage.getReferredTokenBinding());
+
+            PublicKey publicKey = provided.getTokenBindingID().getPublicKey();
+            assertThat(keyPair.getPublic(), equalTo(publicKey));
+        });
+
+
     }
 
     @Test
