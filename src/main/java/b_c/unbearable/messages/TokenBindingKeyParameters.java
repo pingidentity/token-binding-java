@@ -23,8 +23,6 @@ public abstract class TokenBindingKeyParameters
     public static final byte RSA2048_PSS = 1;
     public static final byte ECDSAP256 = 2;
 
-    // TODO some kind of check if available
-
     public static TokenBindingKeyParameters fromIdentifier(byte identifier)
     {
         switch (identifier)
@@ -68,12 +66,7 @@ public abstract class TokenBindingKeyParameters
         Signature verifier;
         try
         {
-            verifier = Signature.getInstance(getJavaAlgorithm());
-            AlgorithmParameterSpec algorithmParameterSpec = getJavaAlgorithmParameterSpec();
-            if (algorithmParameterSpec != null)
-            {
-                verifier.setParameter(algorithmParameterSpec);
-            }
+            verifier = getSignatureObject();
         }
         catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e)
         {
@@ -100,16 +93,34 @@ public abstract class TokenBindingKeyParameters
 
     public byte[] sign(byte[] signatureInput, PrivateKey privateKey) throws GeneralSecurityException
     {
-        Signature signer = Signature.getInstance(getJavaAlgorithm());
-        AlgorithmParameterSpec algorithmParameterSpec = getJavaAlgorithmParameterSpec();
-        if (algorithmParameterSpec != null)
-        {
-            signer.setParameter(algorithmParameterSpec);
-        }
-
+        Signature signer = getSignatureObject();
         signer.initSign(privateKey);
         signer.update(signatureInput);
         return signer.sign();
+    }
+
+    Signature getSignatureObject() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException
+    {
+        Signature instance = Signature.getInstance(getJavaAlgorithm());
+        AlgorithmParameterSpec algorithmParameterSpec = getJavaAlgorithmParameterSpec();
+        if (algorithmParameterSpec != null)
+        {
+            instance.setParameter(algorithmParameterSpec);
+        }
+        return instance;
+    }
+
+    public boolean isSupportedAndAvailable()
+    {
+        try
+        {
+            getSignatureObject();
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 
 
@@ -154,6 +165,12 @@ public abstract class TokenBindingKeyParameters
         String checkPublicKey(PublicKey publicKey)
         {
             return null;
+        }
+
+        @Override
+        public boolean isSupportedAndAvailable()
+        {
+            return false;
         }
 
         @Override
