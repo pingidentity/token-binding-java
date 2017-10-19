@@ -1,19 +1,15 @@
 package b_c.unbearable.server;
 
-import b_c.unbearable.client.TokenBindingMessageMaker;
+import b_c.unbearable.TokenBindingException;
 import b_c.unbearable.messages.SignatureResult;
 import b_c.unbearable.messages.TokenBinding;
 import b_c.unbearable.messages.TokenBindingKeyParameters;
 import b_c.unbearable.messages.TokenBindingMessage;
-import b_c.unbearable.utils.EcKeyUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.KeyPair;
-import java.util.Arrays;
-import java.util.Base64;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,7 +48,7 @@ public class HttpsTokenBindingServerProcessingTest
             tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.RSA2048_PKCS1_5, ekm);
             fail(tokenBindingMessage + " shouldn't have gotten here due to invalid signature");
         }
-        catch (TBException e)
+        catch (TokenBindingException e)
         {
             log.debug("Expected this with invalid signature: " + e);
         }
@@ -67,7 +63,7 @@ public class HttpsTokenBindingServerProcessingTest
             tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
             fail(tokenBindingMessage + " shouldn't have gotten here due to invalid signature");
         }
-        catch (TBException e)
+        catch (TokenBindingException e)
         {
             log.debug("Expected this with invalid signature: " + e);
         }
@@ -149,7 +145,7 @@ public class HttpsTokenBindingServerProcessingTest
             TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encodedTokenBindingMessage, TokenBindingKeyParameters.ECDSAP256, ekm);
             fail(tokenBindingMessage + " shouldn't have gotten here due to invalid signature");
         }
-        catch (TBException e)
+        catch (TokenBindingException e)
         {
             log.debug("Expected this with invalid signature: " + e);
         }
@@ -174,7 +170,7 @@ public class HttpsTokenBindingServerProcessingTest
             TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encodedTokenBindingMessage, TokenBindingKeyParameters.ECDSAP256, ekm);
             fail(tokenBindingMessage + " shouldn't have gotten here due to invalid signature");
         }
-        catch (TBException e)
+        catch (TokenBindingException e)
         {
             log.debug("Expected this with invalid signature: " + e);
         }
@@ -200,7 +196,7 @@ public class HttpsTokenBindingServerProcessingTest
             TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encodedTokenBindingMessage, TokenBindingKeyParameters.ECDSAP256, ekm);
             fail(tokenBindingMessage + " shouldn't have gotten here due to invalid signature");
         }
-        catch (TBException e)
+        catch (TokenBindingException e)
         {
             log.debug("Expected this with invalid signature: " + e);
         }
@@ -221,7 +217,7 @@ public class HttpsTokenBindingServerProcessingTest
             TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encoded, TokenBindingKeyParameters.ECDSAP256, ekm);
             fail(tokenBindingMessage + " HttpsTokenBindingServerProcessing processSecTokenBindingHeader should fail on " + encoded);
         }
-        catch (TBException e)
+        catch (TokenBindingException e)
         {
             log.debug("Expected this trying to process Sec-Token-Binding of " + encoded + ": " + e);
         }
