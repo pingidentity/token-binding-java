@@ -1,4 +1,4 @@
-package b_c.unbearable.utils.jsseboot;
+package b_c.unbearable.jsseboot;
 
 import b_c.unbearable.UncheckedTokenBindingException;
 
