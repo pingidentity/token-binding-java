@@ -33,14 +33,14 @@ public class HttpsTokenBindingServerProcessing
         }
         catch (IOException | GeneralSecurityException e)
         {
-            String msg = String.format("Unexpected problem processing the Token Binding message %s: %s", bts(tbmBytes), e);
+            String msg = String.format("Unexpected problem processing the Token Binding message %s: %s", Arrays.toString(tbmBytes), e);
             throw new TokenBindingException(msg, e);
         }
 
         TokenBinding providedTokenBinding = tokenBindingMessage.getProvidedTokenBinding();
         if (providedTokenBinding == null)
         {
-            String msg = String.format("The Token Binding message does not contain a provided_token_binding %s", bts(tbmBytes));
+            String msg = String.format("The Token Binding message does not contain a provided_token_binding %s", Arrays.toString(tbmBytes));
             throw new TokenBindingException(msg);
         }
 
@@ -49,7 +49,7 @@ public class HttpsTokenBindingServerProcessing
         if (sigStatus != SignatureResult.Status.VALID)
         {
             String msg = String.format("The signature of the provided Token Binding is not valid (%s) Token Binding message %s EKM %s",
-                    signatureResult, bts(tbmBytes), bts(ekm));
+                    signatureResult, Arrays.toString(tbmBytes), Arrays.toString(ekm));
             throw new TokenBindingException(msg);
         }
 
@@ -68,17 +68,11 @@ public class HttpsTokenBindingServerProcessing
             if (referredSigStatus == SignatureResult.Status.INVALID)
             {
                 String msg = String.format("The signature of the referred Token Binding is not valid (%s) Token Binding message %s EKM %s ",
-                        referredSignatureResult, bts(tbmBytes), bts(ekm));
+                        referredSignatureResult, Arrays.toString(tbmBytes), Arrays.toString(ekm));
                 throw new TokenBindingException(msg);
             }
         }
 
         return tokenBindingMessage;
     }
-
-    private static String bts(byte[] bytes)
-    {
-        return Arrays.toString(bytes);
-    }
-
 }
