@@ -1,7 +1,5 @@
 package b_c.unbearable.utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 
 /**
@@ -43,7 +41,7 @@ public class Util
 
     public static byte[] concat(byte[]... byteArrays)
     {
-        int size = totalLenght(byteArrays);
+        int size = totalLength(byteArrays);
         Out out = new Out(size);
         for (byte[] bytes : byteArrays)
         {
@@ -52,7 +50,7 @@ public class Util
         return out.toByteArray();
     }
 
-    public static int totalLenght(byte[]... byteArrays)
+    public static int totalLength(byte[]... byteArrays)
     {
         int size = 0;
         for (byte[] bytes : byteArrays)
