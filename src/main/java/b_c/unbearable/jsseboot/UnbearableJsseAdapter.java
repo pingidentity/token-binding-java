@@ -14,15 +14,15 @@ public class UnbearableJsseAdapter
 {
     public TlsTbInfo getTbInfo(SSLSocket sslSocket) throws NoSuchMethodException
     {
-        return getTbInfo(sslSocket);
+        return _getTbInfo(sslSocket);
     }
 
     public TlsTbInfo getTbInfo(SSLEngine engine) throws NoSuchMethodException
     {
-        return getTbInfo(engine);
+        return _getTbInfo(engine);
     }
 
-    TlsTbInfo getTbInfo(Object object) throws NoSuchMethodException
+    TlsTbInfo _getTbInfo(Object object) throws NoSuchMethodException
     {
         Class<?> objectClass = object.getClass();
         try
@@ -52,15 +52,15 @@ public class UnbearableJsseAdapter
 
     public void setSupportedTokenBindingKeyParams(SSLSocket sslSocket, byte[] supportedTokenBindingKeyParams) throws NoSuchMethodException
     {
-        setSupportedTokenBindingKeyParams(sslSocket, supportedTokenBindingKeyParams);
+        _setSupportedTokenBindingKeyParams(sslSocket, supportedTokenBindingKeyParams);
     }
 
     public void setSupportedTokenBindingKeyParams(SSLEngine engine, byte[] supportedTokenBindingKeyParams) throws NoSuchMethodException
     {
-        setSupportedTokenBindingKeyParams(engine, supportedTokenBindingKeyParams);
+        _setSupportedTokenBindingKeyParams(engine, supportedTokenBindingKeyParams);
     }
 
-    void setSupportedTokenBindingKeyParams(Object object, byte[] supported) throws NoSuchMethodException
+    void _setSupportedTokenBindingKeyParams(Object object, byte[] supported) throws NoSuchMethodException
     {
         Class<?> objectClass = object.getClass();
         try
