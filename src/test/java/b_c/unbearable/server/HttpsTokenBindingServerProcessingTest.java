@@ -222,4 +222,29 @@ public class HttpsTokenBindingServerProcessingTest
             log.debug("Expected this trying to process Sec-Token-Binding of " + encoded + ": " + e);
         }
     }
+
+    @Test
+    public void providedECDSAP256fromChromeToJava9Server() throws Exception
+    {
+        String stb = "AIkAAgBBQBaKc7ww4HVlFLKxCZW8RmttltZ_CvuvHpz5YAR6BCQnbTf3WksAFdBMl6X30JNzJTs4ecIN2aEZUHWGP2Nh0l0AQLlNmE9jrgNVINJMMzLod7G-IcQ74K7448UDqoIm07epCHSrqqGKMN4v06jQzlyNECZaNSFq-SwTlWT309FbSeEAAA";
+        byte[] ekm = new byte[] {85, 114, 2, -124, 93, -33, -41, 48, -32, 87, 37, -36, 12, 88, 63, -96, 76, -57, -10, 61, -98, 27, -35, 73, -104, -110, -78, 20, 63, 100, 41, 48};
+
+        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
+
+        TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(stb, TokenBindingKeyParameters.ECDSAP256, ekm);
+
+        TokenBinding providedTokenBinding = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(providedTokenBinding.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(providedTokenBinding.getKeyParamsIdentifier()));
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+        assertThat(tokenBindingMessage.getTokenBindings().size(), equalTo(1));
+    }
+
+    @Test
+    public void nullEncodedMessage() throws Exception
+    {
+        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
+        TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(null, null, null);
+        assertNull(tokenBindingMessage);
+    }
 }

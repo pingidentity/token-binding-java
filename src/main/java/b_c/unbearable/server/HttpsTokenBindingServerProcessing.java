@@ -18,6 +18,11 @@ public class HttpsTokenBindingServerProcessing
     public TokenBindingMessage processSecTokenBindingHeader(String encodedTokenBindingMessage, Byte negotiatedTbKeyParams, byte[] ekm)
             throws TokenBindingException
     {
+        if (encodedTokenBindingMessage == null)
+        {
+            return null;
+        }
+
         if (negotiatedTbKeyParams == null)
         {
             String msg = "The Token Binding protocol was not negotiated but the client sent a Token Binding message.";
