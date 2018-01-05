@@ -40,14 +40,6 @@
     </license>
   </licenses>
 
-  <developers>
-    <developer>
-      <name>Brian Campbell</name>
-      <email>brian.d.campbell@gmail.com</email>
-      <url>https://twitter.com/__b_c</url>
-    </developer>
-  </developers>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
