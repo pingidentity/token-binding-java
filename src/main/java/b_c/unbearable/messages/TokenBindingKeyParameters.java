@@ -13,6 +13,8 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -101,11 +103,26 @@ public abstract class TokenBindingKeyParameters
 
     Signature getSignatureObject() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException
     {
-        Signature instance = Signature.getInstance(getJavaAlgorithm());
+        String javaAlgorithm = getJavaAlgorithm();
+        Signature instance = Signature.getInstance(javaAlgorithm);
         AlgorithmParameterSpec algorithmParameterSpec = getJavaAlgorithmParameterSpec();
         if (algorithmParameterSpec != null)
         {
-            instance.setParameter(algorithmParameterSpec);
+            try
+            {
+                instance.setParameter(algorithmParameterSpec);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                // JCA providers that we know about either accept the parameter spec or default to what is needed by rsa2048_pss but throw UnsupportedOperationException
+                Logger log = Logger.getLogger(getClass().getName());
+                if (log.isLoggable(Level.INFO))
+                {
+                    log.log(Level.INFO, "Unable to set algorithm parameter spec on Signature (java algorithm name: " + javaAlgorithm +
+                            ") so ignoring the UnsupportedOperationException and relying on the default parameters.", e);
+                }
+            }
+
         }
         return instance;
     }
