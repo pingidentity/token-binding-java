@@ -42,6 +42,8 @@ public class HttpsTokenBindingServerProcessing
             throw new TokenBindingException(msg, e);
         }
 
+        // TODO new in https://www.ietf.org/rfcdiff?url2=draft-ietf-tokbind-https-12 has "exactly one" for provided and referred, which isn't checked now
+
         TokenBinding providedTokenBinding = tokenBindingMessage.getProvidedTokenBinding();
         if (providedTokenBinding == null)
         {
@@ -77,6 +79,8 @@ public class HttpsTokenBindingServerProcessing
                 throw new TokenBindingException(msg);
             }
         }
+
+        // TODO other types to be treated similar to referred...
 
         return tokenBindingMessage;
     }
