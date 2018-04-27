@@ -18,22 +18,22 @@ public class TokenBindingMessage
 
     public static TokenBindingMessage fromBytes(byte[] tokenBindingMessageBytes, byte[] ekm) throws IOException, GeneralSecurityException
     {
-            In in = new In(tokenBindingMessageBytes);
-            int len = in.readTwoByteInt();
-            if (len != in.available())
-            {
-                throw new IOException("TokenBindingMessage length of " + len + " indicated but " + in.available() + " bytes are available " + Arrays.toString(tokenBindingMessageBytes) );
-            }
+        In in = new In(tokenBindingMessageBytes);
+        int len = in.readTwoByteInt();
+        if (len != in.available())
+        {
+            throw new IOException("TokenBindingMessage length of " + len + " indicated but " + in.available() + " bytes are available " + Arrays.toString(tokenBindingMessageBytes) );
+        }
 
-            TokenBindingMessage tokenBindingMessage = new TokenBindingMessage();
+        TokenBindingMessage tokenBindingMessage = new TokenBindingMessage();
 
-            while (in.available() > 0)
-            {
-                TokenBinding tb = new TokenBinding();
+        while (in.available() > 0)
+        {
+            TokenBinding tb = new TokenBinding();
 
-                final int tbTypeAsInt = in.readOneByteInt();
-                final byte tbType = Util.byteFromInt(tbTypeAsInt);
-                tb.tokenBindingType = new TokenBindingType(tbType);
+            final int tbTypeAsInt = in.readOneByteInt();
+            final byte tbType = Util.byteFromInt(tbTypeAsInt);
+            tb.tokenBindingType = new TokenBindingType(tbType);
 
             in.mark();
             int keyParametersIdentifierAsInt = in.readOneByteInt();
