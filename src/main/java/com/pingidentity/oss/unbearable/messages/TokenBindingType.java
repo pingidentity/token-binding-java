@@ -20,18 +20,13 @@ public class TokenBindingType
         return type;
     }
 
-    boolean isProvided()
+    public boolean isProvided()
     {
         return type == PROVIDED;
     }
 
-    boolean isReferred()
+    public boolean isReferred()
     {
         return type == REFERRED;
-    }
-
-    boolean isKnownType()
-    {
-        return isProvided() || isReferred();
     }
 }
