@@ -12,6 +12,11 @@ public class TokenBinding
 
     SignatureResult signatureResult;
 
+    public TokenBindingType getTokenBindingType()
+    {
+        return tokenBindingType;
+    }
+
     public SignatureResult getSignatureResult()
     {
         return signatureResult;
