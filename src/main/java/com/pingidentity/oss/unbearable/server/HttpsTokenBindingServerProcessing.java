@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 /**
  *
@@ -42,15 +43,55 @@ public class HttpsTokenBindingServerProcessing
             throw new TokenBindingException(msg, e);
         }
 
-        // TODO new in https://www.ietf.org/rfcdiff?url2=draft-ietf-tokbind-https-12 has "exactly one" for provided and referred, which isn't checked now
+        boolean seenProvided = false;
+        boolean seenReferred = false;
 
-        TokenBinding providedTokenBinding = tokenBindingMessage.getProvidedTokenBinding();
-        if (providedTokenBinding == null)
+        List<TokenBinding> tokenBindings = tokenBindingMessage.getTokenBindings();
+        for (TokenBinding tb : tokenBindings)
+        {
+            if (tb.getTokenBindingType().isProvided())
+            {
+                if (!seenProvided)
+                {
+                    seenProvided = true;
+                    checkProvided(negotiatedTbKeyParams, ekm, tbmBytes, tb);
+                }
+                else
+                {
+                    String msg = String.format("The Token Binding message contains more than one provided_token_binding %s", Arrays.toString(tbmBytes));
+                    throw new TokenBindingException(msg);
+                }
+            }
+            else if (tb.getTokenBindingType().isReferred())
+            {
+                if (!seenReferred)
+                {
+                    seenReferred = true;
+                    checkReferred(ekm, tbmBytes, tb);
+                }
+                else
+                {
+                    String msg = String.format("The Token Binding message contains more than one referred_token_binding %s", Arrays.toString(tbmBytes));
+                    throw new TokenBindingException(msg);
+                }
+            }
+            else
+            {
+                checkOther(ekm, tbmBytes, tb);
+            }
+        }
+
+        if (!seenProvided)
         {
             String msg = String.format("The Token Binding message does not contain a provided_token_binding %s", Arrays.toString(tbmBytes));
             throw new TokenBindingException(msg);
         }
 
+        return tokenBindingMessage;
+    }
+
+    private void checkProvided(Byte negotiatedTbKeyParams, byte[] ekm, byte[] tbmBytes, TokenBinding providedTokenBinding) throws TokenBindingException
+    {
         SignatureResult signatureResult = providedTokenBinding.getSignatureResult();
         SignatureResult.Status sigStatus = signatureResult.getStatus();
         if (sigStatus != SignatureResult.Status.VALID)
@@ -66,22 +107,27 @@ public class HttpsTokenBindingServerProcessing
             String msg = String.format("The key parameters of provided_token_binding %s is different than negotiated %s.", kpId, negotiatedTbKeyParams);
             throw new TokenBindingException(msg);
         }
+    }
 
-        TokenBinding referredTokenBinding = tokenBindingMessage.getReferredTokenBinding();
-        if (referredTokenBinding != null)
+    private void checkReferred(byte[] ekm, byte[] tbmBytes, TokenBinding referredTokenBinding) throws TokenBindingException
+    {
+        checkSigNotInvalid(ekm, tbmBytes, referredTokenBinding, "referred");
+    }
+
+    private void checkOther(byte[] ekm, byte[] tbmBytes, TokenBinding tokenBinding) throws TokenBindingException
+    {
+        checkSigNotInvalid(ekm, tbmBytes, tokenBinding,  "type=" + tokenBinding.getTokenBindingType().getType());
+    }
+    
+    private void checkSigNotInvalid(byte[] ekm, byte[] tbmBytes, TokenBinding tokenBinding, String name) throws TokenBindingException
+    {
+        SignatureResult signatureResult = tokenBinding.getSignatureResult();
+        SignatureResult.Status signatureStatus = signatureResult.getStatus();
+        if (signatureStatus == SignatureResult.Status.INVALID)
         {
-            SignatureResult referredSignatureResult = referredTokenBinding.getSignatureResult();
-            SignatureResult.Status referredSigStatus = referredSignatureResult.getStatus();
-            if (referredSigStatus == SignatureResult.Status.INVALID)
-            {
-                String msg = String.format("The signature of the referred Token Binding is not valid (%s) Token Binding message %s EKM %s ",
-                        referredSignatureResult, Arrays.toString(tbmBytes), Arrays.toString(ekm));
-                throw new TokenBindingException(msg);
-            }
+            String msg = String.format("The signature of the %s Token Binding is invalid (%s) Token Binding message %s EKM %s ",
+                    name, signatureResult, Arrays.toString(tbmBytes), Arrays.toString(ekm));
+            throw new TokenBindingException(msg);
         }
-
-        // TODO other types to be treated similar to referred...
-
-        return tokenBindingMessage;
     }
 }
