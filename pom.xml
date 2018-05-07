@@ -23,7 +23,7 @@
   <packaging>jar</packaging>
   <name>Token Binding for Java</name>
   <description>
-     A library to process/validate and create/sign Token Binding message structures in Java.
+     A library for processing/validating as well as creating/signing Token Binding message structures in Java.
   </description>
   <url>https://github.com/pingidentity/token-binding-java</url>
 
