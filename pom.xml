@@ -19,7 +19,7 @@
 
   <groupId>com.pingidentity.oss</groupId>
   <artifactId>token-binding-java</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
   <name>Token Binding for Java</name>
   <description>
@@ -222,7 +222,7 @@
   <scm>
     <connection>scm:git:https://github.com/pingidentity/token-binding-java.git</connection>
     <developerConnection>scm:git:git@github.com:pingidentity/token-binding-java.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>token-binding-java-1.0.0</tag>
     <url>https://github.com/pingidentity/token-binding-java</url>
   </scm>
 </project>
