@@ -477,17 +477,17 @@ public class TokenBindingMessageTest
     @Test
     public void v0_10_providedAndReferredECDSAP256_3() throws Exception
     {
-        // used in examples of form code flow for -01 (maybe) http://openid.net/specs/openid-connect-token-bound-authentication-1_0.html
+        // used in examples of form code flow for -01 of http://openid.net/specs/openid-connect-token-bound-authentication-1_0.html
+        // also for Provided Token Binding ID and Provided and Referred Token Binding IDs examples from https://tools.ietf.org/html/draft-ietf-tokbind-ttrp-03
 
         // provided and referred to the IPD
         String encoded = "ARIAAgBBQCfsI1D1sTq5mvT_2H_dihNIvuHJCHGjHPJchPavNbGrOo26-2JgT_IsbvZd4daDFbirYBIwJ-TK1rh8FzrC-psAQMyYIqXj7djGPev1dkjV9XxLYGCyqOrBVEtBHrMUCeo22ymLg3OiFcl" +
                 "_fmOPxJbjxI6lKcF0lyfy-dSQmPIezQ0AAAECAEFArPIiuZxj9gK0dWhIcG63r2-sZ8V3LX9gpNl8Um_oGOtmwoP1v0VHNIHEOzW3BOqcBLvUzVEG6a6KGEj3GrFcqQBAHQm0pzgUTXKLRamuKE1pmmP9I3UBVpo" +
                 "e1DBCe9H2l1VPpsImakUa6crAqZ-0CGBmji7bYzQogpKcyxTTFk5zdwAA";
 
-        byte[] ekm = new byte[] {-64, 69, -106, 8, -3, 74, 63, 23, -22, -7, 2, -8, 55, 22, 8, 35, -13, -8, -74, 47, -3, 97, -118, -85, 78, -111, -84, -37, -64, 89, 18, -95};
-        String encodedEkm = Base64.getUrlEncoder().withoutPadding().encodeToString(ekm);
-//        System.out.println("EKM with IDP: " + encodedEkm);
-        ekm = Base64.getUrlDecoder().decode(encodedEkm);
+        String encodedEkm = "wEWWCP1KPxfq-QL4NxYII_P4ti_9YYqrTpGs28BZEqE";
+        //System.out.println("EKM with IDP: " + encodedEkm);
+        byte[] ekm = Base64.getUrlDecoder().decode(encodedEkm);
         TokenBindingMessage tbMessage = fromBase64urlEncoded(encoded, ekm);
         assertThat(2, equalTo(tbMessage.getTokenBindings().size()));
         TokenBinding providedTokenBinding = tbMessage.getProvidedTokenBinding();
@@ -510,9 +510,8 @@ public class TokenBindingMessageTest
                 "XWVSBFeHxFMdXRBIH_LKOSAuSMOJ0XEw1Q8DE248qkOiRKzw3KdSNYukYEPmO21bQi" +
                 "3YYAAA";
 
-        ekm = new byte[] {1, -123, 84, 107, 35, -45, 63, -44, 102, 16, -77, 105, 26, 49, 101, -23, -119, 38, -40, 37, 49, -18, -107, 12, -59, -19, -7, -55, -67, 117, 118, 5};
-        encodedEkm = Base64.getUrlEncoder().withoutPadding().encodeToString(ekm);
-//        System.out.println("EKM with RP: " + encodedEkm);
+        encodedEkm = "AYVUayPTP9RmELNpGjFl6Ykm2CUx7pUMxe35yb11dgU";
+        // System.out.println("EKM with RP: " + encodedEkm);
         ekm = Base64.getUrlDecoder().decode(encodedEkm);
 
         tbMessage = fromBase64urlEncoded(encoded, ekm);
