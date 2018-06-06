@@ -16,22 +16,30 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertNull;
@@ -443,7 +451,7 @@ public class TokenBindingMessageMakerTest
         byte[] ekm = new byte[] {97, 7, 92, -12, -51, 66, -21, -11, 125, -119, -1, 67, 32, -92, -17, -117, 42, -86,
                 39, -49, -101, 56, 73, 82, -17, 69, 9, -4, -43, -94, 3, 22};
 
-        KeyPair kp = getStaticEcKeyPair();
+        KeyPair kp = getStaticEcKeyPair1();
 
         byte tbKeyParams = TokenBindingKeyParameters.ECDSAP256;
 
@@ -474,9 +482,74 @@ public class TokenBindingMessageMakerTest
         assertThat(kp.getPublic(), equalTo(provided.getTokenBindingID().getPublicKey()));
     }
 
+    @Test
+    public void providedAndOthers() throws Exception
+    {
+        // used in https://tools.ietf.org/html/draft-ietf-tokbind-ttrp for the example with Sec-Other-Token-Binding-ID
+
+        byte[] ekm = Base64.getUrlDecoder().decode("Zr_1DESCcDoaltcZCK613UrEWHRf2B3w9i3bwcxpacc");
+
+        // make it
+        KeyPair kp1 = getStaticEcKeyPair1();
+        KeyPair kp2 = getStaticEcKeyPair2();
+        KeyPair kp3 = getStaticEcKeyPair3();
+        byte tbTypeOtherA = (byte) 77;
+        byte tbTypeOtherB = (byte) 11;
+        TokenBindingMessageMaker maker = new TokenBindingMessageMaker()
+                .ekm(ekm)
+                .providedTokenBinding(TokenBindingKeyParameters.ECDSAP256, kp1)
+                .tokenBinding(tbTypeOtherA, TokenBindingKeyParameters.ECDSAP256, kp2, new byte[0])
+                .tokenBinding(tbTypeOtherB, TokenBindingKeyParameters.ECDSAP256, kp3, new byte[0]);
+        String encodedTbMessage = maker.makeEncodedTokenBindingMessage();
+
+        Base64.Encoder b64encoder = Base64.getUrlEncoder().withoutPadding();
+
+        log.debug("Encoded EKM :: " + b64encoder.encodeToString(ekm));
+        log.debug("Sec-Token-Binding: " + encodedTbMessage);
+
+
+        // and then process it
+        HttpsTokenBindingServerProcessing htbsp = new HttpsTokenBindingServerProcessing();
+        TokenBindingMessage tokenBindingMessage = htbsp.processSecTokenBindingHeader(encodedTbMessage, TokenBindingKeyParameters.ECDSAP256, ekm);
+        assertThat(3, equalTo(tokenBindingMessage.getTokenBindings().size()));
+        TokenBinding provided = tokenBindingMessage.getProvidedTokenBinding();
+        assertThat(SignatureResult.Status.VALID, equalTo(provided.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(provided.getKeyParamsIdentifier()));
+        assertNull(tokenBindingMessage.getReferredTokenBinding());
+        assertThat(kp1.getPublic(), equalTo(provided.getTokenBindingID().getPublicKey()));
+
+        List<TokenBinding> tokenBindings = tokenBindingMessage.getTokenBindings();
+        assertThat(provided, equalTo(tokenBindings.get(0)));
+        TokenBinding otherTokenBindingA = tokenBindings.get(1);
+        assertThat(SignatureResult.Status.VALID, equalTo(otherTokenBindingA.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(otherTokenBindingA.getKeyParamsIdentifier()));
+        assertThat(otherTokenBindingA, equalTo(tokenBindingMessage.getTokenBindingByType(tbTypeOtherA)));
+        assertThat(tbTypeOtherA, equalTo(otherTokenBindingA.getTokenBindingType().getType()));
+        assertThat(kp2.getPublic(), equalTo(otherTokenBindingA.getTokenBindingID().getPublicKey()));
+
+        TokenBinding otherTokenBindingB = tokenBindings.get(2);
+        assertThat(SignatureResult.Status.VALID, equalTo(otherTokenBindingB.getSignatureResult().getStatus()));
+        assertThat(TokenBindingKeyParameters.ECDSAP256, equalTo(otherTokenBindingB.getKeyParamsIdentifier()));
+        assertThat(otherTokenBindingB, equalTo(tokenBindingMessage.getTokenBindingByType(tbTypeOtherB)));
+        assertThat(tbTypeOtherB, equalTo(otherTokenBindingB.getTokenBindingType().getType()));
+        assertThat(kp3.getPublic(), equalTo(otherTokenBindingB.getTokenBindingID().getPublicKey()));
+
+        String providedID = b64encoder.encodeToString(provided.getOpaqueTokenBindingID());
+        log.debug("Sec-Provided-Token-Binding-ID: " + providedID);
+
+        int hexRadix = 16;
+        String encodedTokenBindingTypeA = Integer.toString(tbTypeOtherA, hexRadix);
+        String encodedTokenBindingTypeB = Integer.toString(tbTypeOtherB, hexRadix);
+
+        String otherA = encodedTokenBindingTypeA + "." + b64encoder.encodeToString(otherTokenBindingA.getOpaqueTokenBindingID());
+        String otherB = encodedTokenBindingTypeB + "." + b64encoder.encodeToString(otherTokenBindingB.getOpaqueTokenBindingID());
+
+        log.debug("Sec-Other-Token-Binding-ID: " + otherA + "," + otherB);
+    }
+
     private KeyPair getStaticRsaKeyPair1() throws GeneralSecurityException
     {
-        int radix = Character.MAX_RADIX;
+
         String modulusString = "tjbp00bntpjy4y9sap11ixfqph9uytnrhmmzzk6tk7cviytswf8yiofau2inxwuv6do5rqsexhx94qusytd7a5tpk888rw78laisu8h9s247l89kzh" +
                 "4ig1z1ekkrm90w3hz00m6vbdkrylljzjbdov04crgi9mqnt8dnrmxnbyj1yfpywsj6k4mp92upid7r89u1p3m8x0qqjkv42jjgu0bgubp8h0othwdgzp0hvvqps464542" +
                 "2pp7ubsvbvfq5rn4ckah227o3wxwm5ytuwtsh1rwqwxtflbr0gzsu3n9t3odr64lmi8i2ydg53yhvw9s3o4f9q8rtipwes28tlo376tduzg904redv8vbjn7ztiu8iv0g" +
@@ -487,6 +560,12 @@ public class TokenBindingMessageMakerTest
                 "8czzhwymgmru187eg976b6xv40djj4e1";
         String publicExponentString = "1ekh";
 
+        return rsaKeyPair(modulusString, privateExponentString, publicExponentString);
+    }
+
+    private KeyPair rsaKeyPair(String modulusString, String privateExponentString, String publicExponentString) throws GeneralSecurityException
+    {
+        int radix = Character.MAX_RADIX;
         KeyFactory kf = KeyFactory.getInstance("RSA");
         BigInteger modulus = new BigInteger(modulusString, radix);
         BigInteger publicExponent = new BigInteger(publicExponentString, radix);
@@ -500,7 +579,6 @@ public class TokenBindingMessageMakerTest
 
     private KeyPair getStaticRsaKeyPair2() throws GeneralSecurityException
     {
-        int radix = Character.MAX_RADIX;
 
 //        KeyPair keyPair = RsaKeyUtil.generate2048RsaKeyPair();
 //        RSAPrivateKey  aPrivate = (RSAPrivateKey)keyPair.getPrivate();
@@ -519,20 +597,12 @@ public class TokenBindingMessageMakerTest
                 "al6vye83fo9pnipe3l6h77z8tkz2fvtl";
         String publicExponentString = "1ekh";
 
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        BigInteger modulus = new BigInteger(modulusString, radix);
-        BigInteger publicExponent = new BigInteger(publicExponentString, radix);
-        PublicKey publicKey = kf.generatePublic(new RSAPublicKeySpec(modulus, publicExponent));
-        BigInteger privateExponent = new BigInteger(privateExponentString, radix);
-        PrivateKey privateKey = kf.generatePrivate(new RSAPrivateKeySpec(modulus, privateExponent));
-
-        return new KeyPair(publicKey, privateKey);
+        return rsaKeyPair(modulusString, privateExponentString, publicExponentString);
     }
 
-    private KeyPair getStaticEcKeyPair() throws GeneralSecurityException
+    private KeyPair getStaticEcKeyPair1() throws GeneralSecurityException
     {
-        int radix = Character.MAX_RADIX;
-
+//        int radix = Character.MAX_RADIX;
 //        KeyPair keyPair = EcKeyUtil.generateEcP256KeyPair();
 //        ECPrivateKey  aPrivate = (ECPrivateKey)keyPair.getPrivate();
 //        ECPublicKey aPublic = (ECPublicKey) keyPair.getPublic();
@@ -546,6 +616,32 @@ public class TokenBindingMessageMakerTest
         String s = "11bcdq19flcnx1m6py6a7uh90olznz5pzxoqx7jzm2trtyzkei";
         String x = "cjeheyvv38uegvzxh1voizouhh4y60pxx0ncusn79ql0tb75z";
         String y = "390i77mdovfg1wje78yb8ajvot22cqzo5m0wyfhfodp45q4uuj";
+
+
+        return ecKeyPair(s, x, y);
+    }
+
+    private KeyPair getStaticEcKeyPair2() throws GeneralSecurityException
+    {
+        String s = "2a87olfjrcxhh4ptl1rwvt5d9tb2o3owfrlz3dh5923yltgx15";
+        String x = "1sbhf1nu3joimzfr0pwh1qrslh2y8f5e2y4t8htxo5frgh0yon";
+        String y = "4bujmrt2d9kqus2g9ns5zl0ykf9qs3rfvl1lavic3hafjb417r";
+
+        return ecKeyPair(s, x, y);
+    }
+
+    private KeyPair getStaticEcKeyPair3() throws GeneralSecurityException
+    {
+        String s = "4p9vr9990rlt5hl91t5u53qioya7u5rdexzr0x7utd0dh9y58n";
+        String x = "3a51kn8tah9mitsugnqac3ndfjzp2dzuvqjtxz6eh828b9nk6i";
+        String y = "1geahejyse4ecehzvx9s7dbgnahpcwkzqvpv44ilyssz6fazkx";
+
+        return ecKeyPair(s, x, y);
+    }
+
+    private KeyPair ecKeyPair(String s, String x, String y) throws GeneralSecurityException
+    {
+        int radix = Character.MAX_RADIX;
 
         KeyFactory kf = KeyFactory.getInstance("EC");
         BigInteger si = new BigInteger(s, radix);
